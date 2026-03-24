@@ -1,2 +1,195 @@
-# hellenic-google-ads-mcp
-Remote MCP server for Google Ads API — multi-tenant OAuth, Streamable HTTP, built by Hellenic Technologies
+# 🚀 Hellenic Google Ads MCP Server
+
+Production-ready remote MCP (Model Context Protocol) server providing secure multi-tenant access to the Google Ads API.
+
+**Built by Hellenic Technologies**
+
+## ✨ Features
+
+- **🔐 Multi-tenant OAuth2** - Each user connects their own Google Ads account
+- **🌐 Remote Access** - Use from Claude Desktop, ChatGPT, Gemini, or any MCP client
+- **🔒 Secure** - All API calls route through Hellenic Technologies' Developer Token
+- **⚡ Fast** - SSE-based streaming for real-time responses
+- **📊 Comprehensive** - 11 tools covering campaigns, keywords, budgets, and reporting
+
+## 🔗 Quick Start
+
+### Connect from Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "google-ads": {
+      "url": "https://google-ads-mcp.hellenicai.com/mcp",
+      "transport": "sse"
+    }
+  }
+}
+```
+
+Restart Claude Desktop, then:
+
+1. Ask Claude: "Connect to my Google Ads account"
+2. Claude will call `connect_google_ads` and give you an OAuth URL
+3. Open the URL, authorize access to your Google Ads account
+4. You're ready! Claude can now access your campaigns, keywords, and performance data
+
+### Connect from Other MCP Clients
+
+**MCP Endpoint:** `https://google-ads-mcp.hellenicai.com/mcp`
+
+Use this URL in any MCP-compatible client (ChatGPT, Gemini, etc.)
+
+## 🛠️ Available Tools
+
+### Authentication
+- **`connect_google_ads`** - Generate OAuth URL to connect your Google Ads account
+
+### Account & Campaign Management
+- **`list_accounts`** - List all accessible Google Ads accounts
+- **`get_account_summary`** - Get spend, impressions, clicks, conversions for date range
+- **`list_campaigns`** - List all campaigns with status, budget, and type
+- **`get_campaign_performance`** - Detailed metrics for specific campaign
+- **`pause_campaign`** - Pause a campaign (stops serving ads)
+- **`enable_campaign`** - Enable a paused campaign
+- **`update_campaign_budget`** - Change daily budget
+
+### Ad Groups & Keywords
+- **`list_ad_groups`** - Ad groups with bids and status
+- **`get_keywords`** - Keyword performance + quality scores
+- **`get_search_terms_report`** - Actual search queries triggering your ads
+
+## 🔐 Authentication Flow
+
+1. **Generate Session** - Client generates a unique `session_id` (UUID)
+2. **Start OAuth** - Call `connect_google_ads` with your session_id
+3. **Authorize** - Open the returned URL and grant access to your Google Ads account
+4. **Use Tools** - All subsequent tool calls include your session_id to access your data
+
+Your tokens are stored securely and automatically refreshed. Each user's data is completely isolated.
+
+## 📊 Example Usage
+
+```python
+# In Claude or ChatGPT:
+"Show me my Google Ads campaigns for customer ID 1234567890"
+"What are my top performing keywords this month?"
+"Pause campaign ID 9876543210"
+"Update campaign 9876543210 budget to $50 per day"
+```
+
+## 🏗️ Architecture
+
+- **FastAPI** - Modern async web framework
+- **MCP Protocol** - Server-Sent Events (SSE) for streaming
+- **Google Ads API** - Official Python client library
+- **SQLite** - Local token storage (per-session isolation)
+- **OAuth2** - Secure user authentication via Google
+
+## 🚀 Deployment
+
+Deployed on AWS Ireland (eu-west-1) with:
+- **Process Manager:** PM2 (auto-restart on crash)
+- **Web Server:** OpenLiteSpeed (reverse proxy)
+- **SSL:** Let's Encrypt (auto-renewal)
+
+**Health Check:** https://google-ads-mcp.hellenicai.com/health
+
+## 📁 Project Structure
+
+```
+hellenic-google-ads-mcp/
+├── main.py           # FastAPI application
+├── mcp_server.py     # MCP server setup
+├── tools.py          # All 11 Google Ads tools
+├── auth.py           # OAuth2 flow
+├── db.py             # SQLite token storage
+├── .env              # Environment variables
+└── README.md         # This file
+```
+
+## 🔧 Development
+
+### Local Setup
+
+```bash
+# Clone repository
+git clone https://github.com/patrickabedin/hellenic-google-ads-mcp.git
+cd hellenic-google-ads-mcp
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install fastapi uvicorn mcp google-ads google-auth-oauthlib python-dotenv aiofiles
+
+# Set environment variables
+cp .env.example .env
+# Edit .env with your credentials
+
+# Run server
+uvicorn main:app --host 0.0.0.0 --port 8090 --reload
+```
+
+### Environment Variables
+
+```bash
+GOOGLE_ADS_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_ADS_CLIENT_SECRET=your-client-secret
+GOOGLE_ADS_DEVELOPER_TOKEN=your-developer-token
+GOOGLE_ADS_REDIRECT_URI=https://your-domain.com/oauth/callback
+MCP_SECRET_KEY=random-32-byte-hex
+PORT=8090
+```
+
+## 📤 Submit to Directories
+
+### Smithery
+
+```bash
+# Create smithery.json
+{
+  "name": "hellenic-google-ads-mcp",
+  "description": "Multi-tenant MCP server for Google Ads API access",
+  "url": "https://google-ads-mcp.hellenicai.com/mcp",
+  "transport": "sse"
+}
+```
+
+Submit at: https://smithery.ai/submit
+
+### Glama
+
+Submit at: https://glama.ai/mcp/submit
+
+## 📝 License
+
+Apache License 2.0
+
+## 🏢 About Hellenic Technologies
+
+Professional software development and AI solutions.
+
+**Website:** https://hellenicai.com  
+**GitHub:** https://github.com/patrickabedin
+
+## 🤝 Support
+
+For issues or questions:
+- Open an issue on [GitHub](https://github.com/patrickabedin/hellenic-google-ads-mcp/issues)
+- Contact: support@hellenicai.com
+
+## 🔒 Privacy & Security
+
+- Your Google Ads credentials are stored securely and never shared
+- Each user's data is completely isolated
+- All API calls route through Hellenic Technologies' Developer Token
+- OAuth tokens are automatically refreshed
+- HTTPS only (TLS 1.3)
+
+---
+
+**Made with ❤️ by Hellenic Technologies**
