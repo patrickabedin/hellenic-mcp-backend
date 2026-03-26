@@ -10,7 +10,7 @@ Production-ready remote MCP (Model Context Protocol) server providing secure mul
 - **🌐 Remote Access** - Use from Claude Desktop, ChatGPT, Gemini, or any MCP client
 - **🔒 Secure** - All API calls route through Hellenic Technologies' Developer Token
 - **⚡ Fast** - SSE-based streaming for real-time responses
-- **📊 Comprehensive** - 11 tools covering campaigns, keywords, budgets, and reporting
+- **📊 Comprehensive** - 23 tools covering campaigns, keywords, budgets, recommendations, and reporting
 
 ## 🔗 Quick Start
 
@@ -44,22 +44,31 @@ Use this URL in any MCP-compatible client (ChatGPT, Gemini, etc.)
 
 ## 🛠️ Available Tools
 
-### Authentication
-- **`connect_google_ads`** - Generate OAuth URL to connect your Google Ads account
-
-### Account & Campaign Management
-- **`list_accounts`** - List all accessible Google Ads accounts
-- **`get_account_summary`** - Get spend, impressions, clicks, conversions for date range
-- **`list_campaigns`** - List all campaigns with status, budget, and type
-- **`get_campaign_performance`** - Detailed metrics for specific campaign
-- **`pause_campaign`** - Pause a campaign (stops serving ads)
-- **`enable_campaign`** - Enable a paused campaign
-- **`update_campaign_budget`** - Change daily budget
-
-### Ad Groups & Keywords
-- **`list_ad_groups`** - Ad groups with bids and status
-- **`get_keywords`** - Keyword performance + quality scores
-- **`get_search_terms_report`** - Actual search queries triggering your ads
+| Tool | Description |
+|---|---|
+| `connect_google_ads` | Generate OAuth URL to connect Google Ads account |
+| `list_accounts` | List all accessible Google Ads accounts |
+| `get_account_summary` | Account metrics for a date range |
+| `list_campaigns` | List campaigns with status and budget |
+| `get_campaign_performance` | Detailed campaign metrics |
+| `list_ad_groups` | List ad groups for a campaign |
+| `get_keywords` | Keyword performance and quality scores |
+| `get_search_terms_report` | Search terms that triggered ads |
+| `pause_campaign` | Pause a campaign |
+| `enable_campaign` | Enable a paused campaign |
+| `update_campaign_budget` | Update campaign daily budget |
+| `create_campaign` | Create new campaign (starts PAUSED) |
+| `delete_campaign` | Permanently remove a campaign |
+| `list_recommendations` | Google AI optimization suggestions |
+| `apply_recommendation` | Apply an optimization recommendation |
+| `get_conversion_tracking` | List conversion actions and status |
+| `create_ad_group` | Create ad group within a campaign |
+| `get_quality_score` | Keyword quality scores and ad relevance |
+| `get_auction_insights` | Competitor impression share data |
+| `list_ad_extensions` | Sitelinks, callouts, structured snippets |
+| `update_bidding_strategy` | Change campaign bidding strategy |
+| `get_reach_estimate` | Search volume and bid ranges for keywords |
+| `budget_forecast` | 30-day projected spend and conversions |
 
 ## 🔐 Authentication Flow
 
@@ -78,6 +87,9 @@ Your tokens are stored securely and automatically refreshed. Each user's data is
 "What are my top performing keywords this month?"
 "Pause campaign ID 9876543210"
 "Update campaign 9876543210 budget to $50 per day"
+"Create a new Search campaign with $100/day budget"
+"Show me Google's recommendations for my account"
+"What's my quality score for 'running shoes' keyword?"
 ```
 
 ## 🏗️ Architecture
@@ -103,7 +115,7 @@ Deployed on AWS Ireland (eu-west-1) with:
 hellenic-google-ads-mcp/
 ├── main.py           # FastAPI application
 ├── mcp_server.py     # MCP server setup
-├── tools.py          # All 11 Google Ads tools
+├── tools.py          # All 23 Google Ads tools
 ├── auth.py           # OAuth2 flow
 ├── db.py             # SQLite token storage
 ├── .env              # Environment variables
