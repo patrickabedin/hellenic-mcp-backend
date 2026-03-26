@@ -10,9 +10,9 @@ Production-ready remote MCP (Model Context Protocol) server providing secure mul
 - **🌐 Remote Access** - Use from Claude Desktop, ChatGPT, Gemini, or any MCP client
 - **🔒 Secure** - All API calls route through Hellenic Technologies' Developer Token
 - **⚡ Fast** - SSE-based streaming for real-time responses
-- **📊 Comprehensive** - 23 tools covering campaigns, keywords, budgets, recommendations, and reporting
+- **📊 Comprehensive** - 25 tools covering campaigns, keywords, budgets, billing, recommendations, and reporting
 
-## 🔗 Quick Start
+## 🔑 Quick Start
 
 ### Connect from Claude Desktop
 
@@ -42,33 +42,103 @@ Restart Claude Desktop, then:
 
 Use this URL in any MCP-compatible client (ChatGPT, Gemini, etc.)
 
-## 🛠️ Available Tools
+## 🛠️ Available Tools (25)
+
+### 🔐 Authentication (1)
 
 | Tool | Description |
-|---|---|
-| `connect_google_ads` | Generate OAuth URL to connect Google Ads account |
-| `list_accounts` | List all accessible Google Ads accounts |
-| `get_account_summary` | Account metrics for a date range |
-| `list_campaigns` | List campaigns with status and budget |
-| `get_campaign_performance` | Detailed campaign metrics |
-| `list_ad_groups` | List ad groups for a campaign |
-| `get_keywords` | Keyword performance and quality scores |
-| `get_search_terms_report` | Search terms that triggered ads |
-| `pause_campaign` | Pause a campaign |
-| `enable_campaign` | Enable a paused campaign |
-| `update_campaign_budget` | Update campaign daily budget |
-| `create_campaign` | Create new campaign (starts PAUSED) |
-| `delete_campaign` | Permanently remove a campaign |
-| `list_recommendations` | Google AI optimization suggestions |
-| `apply_recommendation` | Apply an optimization recommendation |
-| `get_conversion_tracking` | List conversion actions and status |
-| `create_ad_group` | Create ad group within a campaign |
-| `get_quality_score` | Keyword quality scores and ad relevance |
-| `get_auction_insights` | Competitor impression share data |
-| `list_ad_extensions` | Sitelinks, callouts, structured snippets |
-| `update_bidding_strategy` | Change campaign bidding strategy |
-| `get_reach_estimate` | Search volume and bid ranges for keywords |
-| `budget_forecast` | 30-day projected spend and conversions |
+|------|-------------|
+| `connect_google_ads` | Authenticate with Google Ads via OAuth. Returns a link to click in chat. |
+
+### 📋 Account Management (3)
+
+| Tool | Description |
+|------|-------------|
+| `list_accounts` | List all client accounts under the Hellenic Technologies MCC (356-856-4840) |
+| `get_account_summary` | Get spend, clicks, impressions, conversions for a date range |
+| `get_conversion_tracking` | View conversion actions and tracking status |
+
+### 📣 Campaign Management (6)
+
+| Tool | Description |
+|------|-------------|
+| `list_campaigns` | List all campaigns with status and budget |
+| `get_campaign_performance` | Performance metrics for a campaign (impressions, clicks, cost, conversions) |
+| `create_campaign` | Create a new campaign (starts PAUSED for safety) |
+| `delete_campaign` | Delete a campaign permanently |
+| `pause_campaign` | Pause a running campaign |
+| `enable_campaign` | Re-enable a paused campaign |
+
+### 💰 Budget & Bidding (3)
+
+| Tool | Description |
+|------|-------------|
+| `update_campaign_budget` | Change a campaign's daily budget |
+| `update_bidding_strategy` | Switch bidding strategy (TARGET_CPA, TARGET_ROAS, MAXIMIZE_CONVERSIONS, etc.) |
+| `budget_forecast` | 30-day spend/clicks/conversions forecast based on recent performance |
+
+### 🎯 Ad Groups & Keywords (3)
+
+| Tool | Description |
+|------|-------------|
+| `list_ad_groups` | List ad groups within a campaign |
+| `create_ad_group` | Create a new ad group |
+| `get_keywords` | List keywords with match type, bids, and status |
+
+### 🔍 Search Intelligence (3)
+
+| Tool | Description |
+|------|-------------|
+| `get_search_terms_report` | See actual search queries that triggered ads |
+| `get_quality_score` | Quality scores and component breakdown per keyword |
+| `get_auction_insights` | Competitive auction data — impression share vs competitors |
+
+### 💡 Recommendations & Extensions (3)
+
+| Tool | Description |
+|------|-------------|
+| `list_recommendations` | Google's optimization suggestions for the account |
+| `apply_recommendation` | Apply a recommendation automatically |
+| `list_ad_extensions` | View sitelinks, callouts, structured snippets |
+
+### 📊 Reach & Planning (1)
+
+| Tool | Description |
+|------|-------------|
+| `get_reach_estimate` | Estimate reach for keyword/audience targeting combinations |
+
+### 💳 Billing & Health Monitoring (2)
+
+| Tool | Description |
+|------|-------------|
+| `get_billing_status` | Check payment method health, account status, spend gaps for one account |
+| `check_all_accounts_billing` | Scan ALL MCC accounts for billing issues — returns CRITICAL/WARNING/healthy summary |
+
+## 💬 Example Questions You Can Ask
+
+**Daily monitoring:**
+- "Check billing health across all my accounts"
+- "Are any of my client accounts suspended or having payment issues?"
+- "Show me yesterday's performance for [client name]"
+
+**Campaign management:**
+- "Pause all campaigns for [client] — they're on holiday"
+- "What's the budget utilization for [campaign]?"
+- "Create a new Search campaign for [client] with €50/day budget"
+
+**Optimization:**
+- "What recommendations does Google have for [account]?"
+- "Show me the search terms report for [campaign] — I want to find negative keywords"
+- "What's the quality score breakdown for [campaign]'s keywords?"
+
+**Competitive intelligence:**
+- "Who am I competing against in auctions for [campaign]?"
+- "What's my impression share vs competitors?"
+
+**Billing & alerts:**
+- "Check if 1926 Collection's ads are running and billing is healthy"
+- "Scan all accounts for payment failures"
+- "Which accounts have had zero spend in the last 2 days?"
 
 ## 🔐 Authentication Flow
 
@@ -115,7 +185,7 @@ Deployed on AWS Ireland (eu-west-1) with:
 hellenic-google-ads-mcp/
 ├── main.py           # FastAPI application
 ├── mcp_server.py     # MCP server setup
-├── tools.py          # All 23 Google Ads tools
+├── tools.py          # All 25 Google Ads tools
 ├── auth.py           # OAuth2 flow
 ├── db.py             # SQLite token storage
 ├── .env              # Environment variables
