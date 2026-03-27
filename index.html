@@ -120,13 +120,13 @@
         }
         
         :root {
-            --bg: #050709;
-            --electric: #0074e0;
-    --electric-light: #2997ff;
+            --bg: #09090B;
+            --electric: #3B82F6;
+    --electric-light: #3B82F6;
             --gold: #f59e0b;
             --white: #ffffff;
             --gray: #94a3b8;
-            --card-bg: #0a0f14;
+            --card-bg: #111113;
         }
         
         body {
@@ -170,15 +170,21 @@
         
         /* Header */
         header {
-            padding: 2rem 0;
+            padding: 1.25rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         
         .logo {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--electric), var(--gold));
+            background: linear-gradient(135deg, var(--electric), var(--electric-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -188,8 +194,8 @@
         .hero {
             padding: 8rem 0 6rem;
             position: relative;
-            background: radial-gradient(ellipse at 30% 20%, rgba(0,116,224,0.08) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(41,151,255,0.04) 0%, transparent 50%);
+            background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(59,130,246,0.04) 0%, transparent 50%);
         }
         
         .hero-inner {
@@ -207,7 +213,7 @@
         .chat-demo {
             flex: 0 0 420px;
             background: #0d1117;
-            border: 1px solid rgba(0,116,224,0.2);
+            border: 1px solid rgba(59,130,246,0.2);
             border-radius: 14px;
             overflow: hidden;
             animation: slideUp 1s ease-out 0.4s backwards;
@@ -217,7 +223,7 @@
             align-items: center;
             gap: 8px;
             padding: 12px 16px;
-            background: rgba(0,116,224,0.08);
+            background: rgba(59,130,246,0.08);
             border-bottom: 1px solid rgba(255,255,255,0.06);
         }
         .chat-demo-header span {
@@ -229,7 +235,7 @@
         .chat-demo-dot {
             width: 8px; height: 8px;
             border-radius: 50%;
-            background: #0074e0;
+            background: #3B82F6;
         }
         .chat-demo-body {
             padding: 20px 16px;
@@ -255,8 +261,8 @@
             color: rgba(255,255,255,0.7);
         }
         .chat-avatar.ai {
-            background: rgba(0,116,224,0.2);
-            color: #2997ff;
+            background: rgba(59,130,246,0.2);
+            color: #3B82F6;
         }
         .chat-bubble {
             background: rgba(255,255,255,0.04);
@@ -270,8 +276,8 @@
             max-width: 320px;
         }
         .chat-bubble.user-bubble {
-            background: rgba(0,116,224,0.1);
-            border-color: rgba(0,116,224,0.2);
+            background: rgba(59,130,246,0.1);
+            border-color: rgba(59,130,246,0.2);
         }
         .chat-bubble.ai-bubble {
             background: rgba(255,255,255,0.03);
@@ -279,7 +285,7 @@
         }
         .typewriter {
             overflow: hidden;
-            border-right: 2px solid #2997ff;
+            border-right: 2px solid #3B82F6;
             white-space: normal;
             animation: blink-caret 0.75s step-end infinite;
         }
@@ -289,7 +295,7 @@
         }
         @keyframes blink-caret {
             from, to { border-color: transparent; }
-            50% { border-color: #2997ff; }
+            50% { border-color: #3B82F6; }
         }
         
         .hero h1 {
@@ -301,7 +307,7 @@
         }
         
         .hero h1 .gradient-text {
-            background: linear-gradient(135deg, var(--electric), var(--gold));
+            background: linear-gradient(135deg, var(--electric), var(--electric-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -355,7 +361,7 @@
         }
         
         .btn-primary:hover {
-            background: #005bb5;
+            background: #2563EB;
             transform: translateY(-2px);
         }
         
@@ -434,7 +440,7 @@
         
         .tool-card {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 116, 224, 0.15);
             border-radius: 16px;
             padding: 2rem;
             position: relative;
@@ -449,15 +455,14 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: linear-gradient(90deg, var(--electric), var(--gold));
+            background: var(--electric);
             opacity: 0;
             transition: opacity 0.4s;
         }
         
         .tool-card:hover {
             transform: translateY(-4px);
-            border-color: var(--electric);
-            box-shadow: 0 0 40px rgba(14, 165, 233, 0.2);
+            border-color: rgba(0, 116, 224, 0.4);
         }
         
         .tool-card:hover::before {
@@ -623,12 +628,12 @@
     
         /* MCP Section */
         .mcp-section { padding: 80px 0; border-top: 1px solid rgba(255,255,255,0.06); }
-        .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #0074e0; margin-bottom: 12px; }
+        .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #3B82F6; margin-bottom: 12px; }
         .section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 700; color: #fff; margin-bottom: 16px; letter-spacing: -0.02em; }
         .section-body { color: rgba(255,255,255,0.55); font-size: 1.05rem; line-height: 1.7; max-width: 680px; margin-bottom: 48px; }
         .mcp-pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-        .mcp-pill { display: flex; align-items: flex-start; gap: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(0,116,224,0.2); border-radius: 12px; padding: 24px; transition: border-color 0.2s, transform 0.2s; }
-        .mcp-pill:hover { border-color: rgba(0,116,224,0.5); transform: translateY(-2px); }
+        .mcp-pill { display: flex; align-items: flex-start; gap: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 24px; transition: border-color 0.2s, transform 0.2s; }
+        .mcp-pill:hover { border-color: rgba(59,130,246,0.5); transform: translateY(-2px); }
         .pill-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
         .pill-title { font-weight: 600; color: #fff; margin-bottom: 4px; font-size: 0.95rem; }
         .pill-desc { color: rgba(255,255,255,0.5); font-size: 0.85rem; line-height: 1.5; }
@@ -638,13 +643,13 @@
         .usecases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         @media (max-width: 768px) { .usecases-grid { grid-template-columns: 1fr; } }
         .usecase-col-header { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 20px; padding: 12px 16px; border-radius: 8px; }
-        .usecase-col-header.agency { background: rgba(0,116,224,0.1); border: 1px solid rgba(0,116,224,0.25); }
+        .usecase-col-header.agency { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); }
         .usecase-col-header.business { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); }
         .usecase-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 10px; margin-top: 4px; }
         .label-sub { font-weight: 400; text-transform: none; letter-spacing: 0; color: rgba(255,255,255,0.25); }
         .prompt-card { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; border-left: 3px solid transparent; transition: background 0.2s; }
         .prompt-card:hover { background: rgba(255,255,255,0.05); }
-        .prompt-card.agency { border-left-color: #0074e0; }
+        .prompt-card.agency { border-left-color: #3B82F6; }
         .prompt-card.business { border-left-color: #f59e0b; }
         .prompt-card code { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.5; }
 
@@ -652,18 +657,18 @@
         /* Platform tabs */
         .platform-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
         .ptab { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); padding:8px 18px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; font-family:'Inter',sans-serif; transition:all 0.2s; }
-        .ptab:hover { background:rgba(0,116,224,0.15); color:#fff; border-color:#0074e0; }
-        .ptab.active { background:#0074e0; color:#fff; border-color:#0074e0; }
+        .ptab:hover { background:rgba(59,130,246,0.15); color:#fff; border-color:#3B82F6; }
+        .ptab.active { background:#3B82F6; color:#fff; border-color:#3B82F6; }
         .platform-panel { }
         .platform-panel.hidden { display:none; }
         .setup-steps { display:flex; flex-direction:column; gap:16px; margin-bottom:28px; }
         .setup-step { display:flex; gap:16px; align-items:flex-start; }
-        .step-num { background:linear-gradient(135deg,#0074e0,#6366f1); color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; margin-top:2px; }
+        .step-num { background:#3B82F6; color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; margin-top:2px; }
         .setup-step div { color:rgba(255,255,255,0.8); font-size:0.95rem; line-height:1.6; }
         .setup-step strong { color:#fff; }
 
         /* OpenClaw section */
-        .openclaw-section { padding:100px 0; background:linear-gradient(180deg, #050709 0%, #080c12 50%, #050709 100%); }
+        .openclaw-section { padding:100px 0; background:linear-gradient(180deg, #09090B 0%, #080c12 50%, #09090B 100%); }
         .openclaw-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:48px; }
         .openclaw-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:28px; transition:all 0.3s; }
         .openclaw-card:hover { border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.06); transform:translateY(-2px); }
@@ -848,7 +853,7 @@
                 top: 100%;
                 left: 0;
                 right: 0;
-                background: #050709;
+                background: #09090B;
                 border-top: 1px solid rgba(255,255,255,0.08);
                 flex-direction: column !important;
                 gap: 0 !important;
@@ -1239,11 +1244,11 @@
             <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;"><img src="/static/favicon-symbol-white.svg" alt="hellenicAI" style="height:52px;width:auto;"></a>
             <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open');this.textContent=this.textContent==='☰'?'✕':'☰'" aria-label="Toggle menu">☰</button>
             <nav class="nav-links" style="display:flex;gap:28px;align-items:center;">
-                <a href="#mcp" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0074e0'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">What is MCP?</a>
-                <a href="#usecases" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0074e0'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">Use Cases</a>
-                <a href="#tools" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0074e0'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">Tools</a>
+                <a href="#mcp" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">What is MCP?</a>
+                <a href="#usecases" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">Use Cases</a>
+                <a href="#tools" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#3B82F6'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">Tools</a>
                 <a href="#openclaw" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#818cf8'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">OpenClaw</a>
-                <a href="https://google-ads-mcp.hellenicai.com/oauth/start" style="background:#0074e0;color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;padding:8px 18px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='#005bb5'" onmouseout="this.style.background='#0074e0'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰';connectGoogleAds();return false;">Connect</a>
+                <a href="https://google-ads-mcp.hellenicai.com/oauth/start" style="background:#3B82F6;color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;padding:8px 18px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰';connectGoogleAds();return false;">Connect</a>
             </nav>
         </div>
     </header>
@@ -1251,15 +1256,33 @@
     <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <div class="hero-content">
-                <h1><span class="gradient-text">Manage</span><br><span class="gradient-text">Google Ads</span><br><span class="hero-plain">through conversation.</span></h1>
-                <p class="hero-subtitle">
-                    Connect your Google Ads accounts to Claude, ChatGPT, Gemini, OpenClaw or hellenicAI. Manage campaigns, analyze performance, and optimize budgets through natural language. Offered for <strong style="color:#f59e0b">FREE</strong> by <strong>hellenicAI</strong>, the AI division of Hellenic Technologies.
-                </p>
-                <div class="cta-group">
-                    <a href="https://google-ads-mcp.hellenicai.com/oauth/start" class="btn btn-primary" onclick="connectGoogleAds();return false;">Connect Google Ads</a>
+            <div class="hero-inner">
+                <div class="hero-content">
+                    <h1><span class="gradient-text">Manage</span><br><span class="gradient-text">Google Ads</span><br><span class="hero-plain">through conversation.</span></h1>
+                    <p class="hero-subtitle">
+                        Connect your Google Ads accounts to Claude, ChatGPT, Gemini, OpenClaw or hellenicAI. Manage campaigns, analyze performance, and optimize budgets through natural language. Offered for <strong style="color:#f59e0b">FREE</strong> by <strong>hellenicAI</strong>, the AI division of Hellenic Technologies.
+                    </p>
+                    <div class="cta-group">
+                        <a href="https://google-ads-mcp.hellenicai.com/oauth/start" class="btn btn-primary" onclick="connectGoogleAds();return false;">Connect Google Ads</a>
+                    </div>
                 </div>
-            </div>
+                <!-- Chat Demo Widget -->
+                <div class="chat-demo">
+                    <div class="chat-demo-header">
+                        <div class="chat-demo-dot"></div>
+                        <span>hellenicAI · Google Ads MCP</span>
+                    </div>
+                    <div class="chat-demo-body">
+                        <div class="chat-msg">
+                            <div class="chat-avatar user">U</div>
+                            <div class="chat-bubble user-bubble">Pause all campaigns with ROAS below 2x this week.</div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar ai">AI</div>
+                            <div class="chat-bubble ai-bubble" id="chat-ai-response"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1691,7 +1714,7 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
   -H "Content-Type: application/json" \
   -H "X-Session-ID: YOUR_SESSION_ID" \
   -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_campaigns","arguments":{}},"id":2}'</code></pre>
-                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 Full MCP spec: <a href="https://modelcontextprotocol.io" target="_blank" style="color:#0074e0;">modelcontextprotocol.io</a></p>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 Full MCP spec: <a href="https://modelcontextprotocol.io" target="_blank" style="color:#3B82F6;">modelcontextprotocol.io</a></p>
             </div>
 
         </div>
@@ -1726,15 +1749,15 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
     </script>
 
 <!-- FAQ Section -->
-    <section id="faq" style="padding: 80px 0; background: #050709; border-top: 1px solid rgba(255,255,255,0.06);">
+    <section id="faq" style="padding: 80px 0; background: #09090B; border-top: 1px solid rgba(255,255,255,0.06);">
         <div class="container">
             <div style="text-align: center; margin-bottom: 48px;">
                 <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; color: #ffffff; margin-bottom: 12px;">Frequently Asked Questions</h2>
-                <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #0074e0, #f59e0b); border-radius: 2px; margin: 16px auto 0;"></div>
+                <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #3B82F6, #f59e0b); border-radius: 2px; margin: 16px auto 0;"></div>
             </div>
             <div style="max-width: 860px; margin: 0 auto;" class="faq-container">
                 <!-- FAQ Item 1 -->
-                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #111113; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #3B82F6; border-radius: 10px;">
                     <div class="faq-question">
                         <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">What is hellenicAI?</h3>
                         <span class="faq-icon">+</span>
@@ -1744,7 +1767,7 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
                     </div>
                 </div>
                 <!-- FAQ Item 2 -->
-                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #111113; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #3B82F6; border-radius: 10px;">
                     <div class="faq-question">
                         <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">What is a Google Ads MCP Server?</h3>
                         <span class="faq-icon">+</span>
@@ -1754,7 +1777,7 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
                     </div>
                 </div>
                 <!-- FAQ Item 3 -->
-                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #111113; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #3B82F6; border-radius: 10px;">
                     <div class="faq-question">
                         <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">How do I connect Google Ads to my AI assistant?</h3>
                         <span class="faq-icon">+</span>
@@ -1764,7 +1787,7 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
                     </div>
                 </div>
                 <!-- FAQ Item 4 -->
-                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #111113; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #3B82F6; border-radius: 10px;">
                     <div class="faq-question">
                         <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">Is hellenicAI free?</h3>
                         <span class="faq-icon">+</span>
@@ -1774,7 +1797,7 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
                     </div>
                 </div>
                 <!-- FAQ Item 5 -->
-                <div class="faq-item" onclick="toggleFaq(this)" style="padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                <div class="faq-item" onclick="toggleFaq(this)" style="padding: 22px 24px 22px 28px; background: #111113; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #3B82F6; border-radius: 10px;">
                     <div class="faq-question">
                         <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">Which AI platforms are supported?</h3>
                         <span class="faq-icon">+</span>
@@ -1789,52 +1812,52 @@ curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
 
 
     <!-- About Hellenic Technologies Section -->
-    <section id="about" style="padding: 80px 0; background: #0a0f14; border-top: 1px solid rgba(255,255,255,0.06);">
+    <section id="about" style="padding: 80px 0; background: #111113; border-top: 1px solid rgba(255,255,255,0.06);">
         <div class="container">
             <div style="text-align: center; margin-bottom: 56px;">
                 <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; color: #ffffff; margin-bottom: 12px;">About Hellenic Technologies</h2>
                 <p style="color: #94a3b8; font-size: 1.05rem; font-weight: 400;">The team behind hellenicAI</p>
-                <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #0074e0, #f59e0b); border-radius: 2px; margin: 20px auto 0;"></div>
+                <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #3B82F6, #f59e0b); border-radius: 2px; margin: 20px auto 0;"></div>
             </div>
 
             <!-- Capability Cards Grid -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto 48px;">
                 <!-- Card 1 -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
-                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🔍</div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.4)';this.style.boxShadow='0 0 24px rgba(59,130,246,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(59,130,246,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🔍</div>
                     <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Web Analytics & Server-Side Tracking</h3>
                     <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">Senior Web Analytics teams specializing in server-side tracking and sophisticated attribution logic — connecting every touchpoint to revenue impact.</p>
                 </div>
                 <!-- Card 2 -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
-                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">📊</div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.4)';this.style.boxShadow='0 0 24px rgba(59,130,246,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(59,130,246,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">📊</div>
                     <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Business Intelligence</h3>
                     <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">Dedicated BI team with deep expertise in BigQuery, Clickhouse, and Metabase — turning raw data into actionable business insights.</p>
                 </div>
                 <!-- Card 3 -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
-                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🤖</div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.4)';this.style.boxShadow='0 0 24px rgba(59,130,246,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(59,130,246,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🤖</div>
                     <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">AI & Marketing Technology</h3>
                     <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">AI teams focused on the business and marketing perspective — like the Google Ads MCP Server — bridging cutting-edge AI with real marketing outcomes.</p>
                 </div>
                 <!-- Card 4 -->
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
-                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🎯</div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(59,130,246,0.4)';this.style.boxShadow='0 0 24px rgba(59,130,246,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(59,130,246,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🎯</div>
                     <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Google Ads & Meta Ads Performance</h3>
                     <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">Senior performance marketers who leverage the full power of analytics, BI, and AI to deliver outstanding results.</p>
                 </div>
             </div>
 
             <!-- Results Callout Box -->
-            <div style="max-width: 860px; margin: 0 auto 40px; padding: 28px 36px; background: rgba(0,116,224,0.05); border: 1px solid rgba(0,116,224,0.2); border-radius: 14px;">
+            <div style="max-width: 860px; margin: 0 auto 40px; padding: 28px 36px; background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.2); border-radius: 14px;">
                 <p style="color: #e2e8f0; font-size: 1.05rem; line-height: 1.85; text-align: center; margin: 0;">
-                    "Businesses switching to Hellenic Technologies to manage their Google Ads and Meta Ads typically see <strong style="color: #0074e0; font-weight: 700;">up to 8x more revenue</strong> while decreasing ad costs and frustrations."
+                    "Businesses switching to Hellenic Technologies to manage their Google Ads and Meta Ads typically see <strong style="color: #3B82F6; font-weight: 700;">up to 8x more revenue</strong> while decreasing ad costs and frustrations."
                 </p>
             </div>
 
             <!-- CTA Button -->
             <div style="text-align: center;">
-                <a href="https://hellenictechnologies.com" target="_blank" style="display: inline-block; padding: 14px 34px; background: linear-gradient(135deg, #0074e0, #005bb5); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,116,224,0.25); transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                <a href="https://hellenictechnologies.com" target="_blank" style="display: inline-block; padding: 14px 34px; background: #3B82F6; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; text-decoration: none; border-radius: 10px; transition: background 0.2s;" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">
                     Learn more at hellenictechnologies.com →
                 </a>
             </div>
@@ -1963,11 +1986,31 @@ function initMobileNav() {
     });
 }
 
+// Typewriter animation for chat demo
+function initTypewriter() {
+    const el = document.getElementById('chat-ai-response');
+    if (!el) return;
+    const text = "Done. I found 3 campaigns with ROAS below 2.0x:\n\n• Brand Search – ROAS 1.4x ($2,180 spend)\n• Competitor Terms – ROAS 1.7x ($1,540 spend)\n• Broad Match – ROAS 1.9x ($980 spend)\n\nAll 3 paused. Want me to send a summary to Slack?";
+    let i = 0;
+    el.classList.add('typewriter');
+    function type() {
+        if (i < text.length) {
+            el.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+            i++;
+            setTimeout(type, 18 + Math.random() * 12);
+        } else {
+            el.classList.add('done');
+        }
+    }
+    setTimeout(type, 1200);
+}
+
 // Initialize on load
 window.addEventListener('load', () => {
     initCarouselDots();
     initUsecaseTabs();
     initMobileNav();
+    initTypewriter();
 });
 
 // Re-initialize on resize
