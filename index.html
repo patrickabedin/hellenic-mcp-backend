@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hellenicAI | Google Ads MCP Server for AI Optimization</title>
+    <meta name="description" content="Free Google Ads MCP Server. Connect Claude, ChatGPT or Gemini for AI Google Ads optimization and automation. Manage campaigns with natural language.">
+    <meta name="keywords" content="Google Ads MCP, Model Context Protocol Google Ads, AI Google Ads management, Claude Google Ads, ChatGPT Google Ads, MCP server, Hellenic Technologies, hellenicAI, Google Ads API, AI campaign management, PPC automation">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="hellenicAI — Hellenic Technologies">
+    <link rel="canonical" href="https://google-ads-mcp.hellenicai.com">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Google Ads MCP Server — AI-Powered Campaign Management">
+    <meta property="og:description" content="Connect Google Ads to any AI assistant via MCP. Manage campaigns, budgets, and performance through natural language. Built by hellenicAI.">
+    <meta property="og:url" content="https://google-ads-mcp.hellenicai.com">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="hellenicAI">
+    <meta property="og:image" content="https://google-ads-mcp.hellenicai.com/static/logo-white.svg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Google Ads MCP Server by hellenicAI">
+    <meta name="twitter:description" content="Connect Google Ads to Claude, ChatGPT, or Gemini. Manage campaigns through natural language via MCP.">
+    <meta name="twitter:site" content="@hellenictech">
+
+    <!-- Schema.org structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Google Ads MCP Server",
+      "description": "MCP server enabling AI assistants to manage Google Ads campaigns through natural language",
+      "url": "https://google-ads-mcp.hellenicai.com",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+      "author": {"@type": "Organization", "name": "Hellenic Technologies", "url": "https://hellenictechnologies.com"}
+    }
+    </script>
+
+    <!-- FAQ Schema for LLM citation -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is hellenicAI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "hellenicAI is the AI division of Hellenic Technologies, a software company based in Greece. hellenicAI builds tools that connect AI assistants to real-world business systems, including the free Google Ads MCP Server."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I connect Google Ads to AI assistants?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Visit google-ads-mcp.hellenicai.com, click Connect Google Ads, authorize via OAuth, then add the MCP endpoint (https://google-ads-mcp.hellenicai.com/mcp) to your AI assistant (Claude, ChatGPT, Gemini, Cursor, or OpenClaw) with your session ID as a header."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is an MCP server for Google Ads?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An MCP (Model Context Protocol) server is a standardized interface that allows AI assistants to connect to external tools. The hellenicAI Google Ads MCP Server lets AI assistants like Claude and ChatGPT read campaign data, analyze performance, and manage budgets through natural language conversation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is hellenicAI free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, the hellenicAI Google Ads MCP Server is completely free to use. There are no usage limits, no premium tiers, and no hidden costs. Connect your Google Ads account and start managing campaigns through AI conversation at no charge."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "hellenicAI",
+      "url": "https://google-ads-mcp.hellenicai.com",
+      "logo": "https://google-ads-mcp.hellenicai.com/static/logo-white.svg",
+      "description": "hellenicAI is the AI division of Hellenic Technologies. We build tools that connect AI assistants to business systems, including the free Google Ads MCP Server for Claude, ChatGPT, and Gemini.",
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Hellenic Technologies",
+        "url": "https://hellenictechnologies.com"
+      },
+      "sameAs": [
+        "https://github.com/patrickabedin/hellenic-google-ads-mcp",
+        "https://twitter.com/hellenictech"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "ai@hellenictechnologies.com",
+        "contactType": "customer service"
+      }
+    }
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg: #050709;
+            --electric: #0074e0;
+    --electric-light: #2997ff;
+            --gold: #f59e0b;
+            --white: #ffffff;
+            --gray: #94a3b8;
+            --card-bg: #0a0f14;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Noise grain overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            z-index: 1;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' /%3E%3C/svg%3E");
+        }
+        
+        /* Static radial gradient (hero only, set inline on .hero) */
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            line-height: 1.1;
+        }
+        
+        /* Header */
+        header {
+            padding: 2rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--electric), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 6rem;
+            position: relative;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0,116,224,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(41,151,255,0.04) 0%, transparent 50%);
+        }
+        
+        .hero-inner {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+        }
+        
+        /* Chat Demo Widget */
+        .chat-demo {
+            flex: 0 0 420px;
+            background: #0d1117;
+            border: 1px solid rgba(0,116,224,0.2);
+            border-radius: 14px;
+            overflow: hidden;
+            animation: slideUp 1s ease-out 0.4s backwards;
+        }
+        .chat-demo-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(0,116,224,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .chat-demo-header span {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            font-family: 'Inter', sans-serif;
+        }
+        .chat-demo-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #0074e0;
+        }
+        .chat-demo-body {
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 220px;
+        }
+        .chat-msg {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .chat-avatar {
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .chat-avatar.user {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+        }
+        .chat-avatar.ai {
+            background: rgba(0,116,224,0.2);
+            color: #2997ff;
+        }
+        .chat-bubble {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.85);
+            font-family: 'Inter', sans-serif;
+            max-width: 320px;
+        }
+        .chat-bubble.user-bubble {
+            background: rgba(0,116,224,0.1);
+            border-color: rgba(0,116,224,0.2);
+        }
+        .chat-bubble.ai-bubble {
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.08);
+        }
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid #2997ff;
+            white-space: normal;
+            animation: blink-caret 0.75s step-end infinite;
+        }
+        .typewriter.done {
+            border-right-color: transparent;
+            animation: none;
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #2997ff; }
+        }
+        
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            animation: slideUp 1s ease-out;
+            letter-spacing: -0.03em;
+        }
+        
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--electric), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero h1 .hero-plain {
+            color: #ffffff;
+        }
+        .hero h1 .hero-free {
+            color: var(--gold);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-bottom: 3rem;
+            animation: slideUp 1s ease-out 0.2s backwards;
+        }
+        
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            animation: slideUp 1s ease-out 0.6s backwards;
+        }
+        
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: var(--electric);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background: #005bb5;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: var(--bg);
+        }
+        
+        /* Works With Section */
+        .works-with {
+            padding: 4rem 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .works-with-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1.5rem;
+        }
+        
+        .works-with-logos {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+        
+        .works-with-logos span {
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        
+        .works-with-logos span:hover {
+            opacity: 1;
+        }
+        
+        /* Tools Grid */
+        .tools-section {
+            padding: 8rem 0;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+        
+        .section-header h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .section-header p {
+            font-size: 1.3rem;
+            color: var(--gray);
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .tool-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .tool-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--electric), var(--gold));
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--electric);
+            box-shadow: 0 0 40px rgba(14, 165, 233, 0.2);
+        }
+        
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+        
+        .tool-number {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--electric);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tool-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .tool-card p {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            padding: 8rem 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(14, 165, 233, 0.03) 50%, transparent 100%);
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 4rem;
+            margin-top: 4rem;
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+        }
+        
+        .step-number {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--electric), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .step h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Config Section */
+        .config-section {
+            padding: 8rem 0;
+        }
+        
+        .config-container {
+            max-width: 900px;
+            margin: 3rem auto 0;
+        }
+        
+        pre {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 2rem;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        code {
+            color: var(--electric);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        
+        .config-urls {
+            margin-top: 2rem;
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .url-box {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        
+        .url-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .url-value {
+            font-family: monospace;
+            color: var(--electric);
+            word-break: break-all;
+        }
+        
+        /* Footer */
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 8rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--electric);
+        }
+        
+        .footer-credit {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .footer-credit a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+        
+        .footer-credit a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive - see comprehensive mobile styles above */
+    
+        /* MCP Section */
+        .mcp-section { padding: 80px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+        .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #0074e0; margin-bottom: 12px; }
+        .section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 700; color: #fff; margin-bottom: 16px; letter-spacing: -0.02em; }
+        .section-body { color: rgba(255,255,255,0.55); font-size: 1.05rem; line-height: 1.7; max-width: 680px; margin-bottom: 48px; }
+        .mcp-pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+        .mcp-pill { display: flex; align-items: flex-start; gap: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(0,116,224,0.2); border-radius: 12px; padding: 24px; transition: border-color 0.2s, transform 0.2s; }
+        .mcp-pill:hover { border-color: rgba(0,116,224,0.5); transform: translateY(-2px); }
+        .pill-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+        .pill-title { font-weight: 600; color: #fff; margin-bottom: 4px; font-size: 0.95rem; }
+        .pill-desc { color: rgba(255,255,255,0.5); font-size: 0.85rem; line-height: 1.5; }
+
+        /* Use Cases Section */
+        .usecases-section { padding: 80px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+        .usecases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        @media (max-width: 768px) { .usecases-grid { grid-template-columns: 1fr; } }
+        .usecase-col-header { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 20px; padding: 12px 16px; border-radius: 8px; }
+        .usecase-col-header.agency { background: rgba(0,116,224,0.1); border: 1px solid rgba(0,116,224,0.25); }
+        .usecase-col-header.business { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); }
+        .usecase-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 10px; margin-top: 4px; }
+        .label-sub { font-weight: 400; text-transform: none; letter-spacing: 0; color: rgba(255,255,255,0.25); }
+        .prompt-card { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 14px 16px; margin-bottom: 8px; border-left: 3px solid transparent; transition: background 0.2s; }
+        .prompt-card:hover { background: rgba(255,255,255,0.05); }
+        .prompt-card.agency { border-left-color: #0074e0; }
+        .prompt-card.business { border-left-color: #f59e0b; }
+        .prompt-card code { font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.5; }
+
+    
+        /* Platform tabs */
+        .platform-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
+        .ptab { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); padding:8px 18px; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500; font-family:'Inter',sans-serif; transition:all 0.2s; }
+        .ptab:hover { background:rgba(0,116,224,0.15); color:#fff; border-color:#0074e0; }
+        .ptab.active { background:#0074e0; color:#fff; border-color:#0074e0; }
+        .platform-panel { }
+        .platform-panel.hidden { display:none; }
+        .setup-steps { display:flex; flex-direction:column; gap:16px; margin-bottom:28px; }
+        .setup-step { display:flex; gap:16px; align-items:flex-start; }
+        .step-num { background:linear-gradient(135deg,#0074e0,#6366f1); color:#fff; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; margin-top:2px; }
+        .setup-step div { color:rgba(255,255,255,0.8); font-size:0.95rem; line-height:1.6; }
+        .setup-step strong { color:#fff; }
+
+        /* OpenClaw section */
+        .openclaw-section { padding:100px 0; background:linear-gradient(180deg, #050709 0%, #080c12 50%, #050709 100%); }
+        .openclaw-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:48px; }
+        .openclaw-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:28px; transition:all 0.3s; }
+        .openclaw-card:hover { border-color:rgba(99,102,241,0.4); background:rgba(99,102,241,0.06); transform:translateY(-2px); }
+        .openclaw-card-icon { font-size:1.8rem; margin-bottom:12px; }
+        .openclaw-card-title { font-size:1rem; font-weight:700; color:#fff; margin-bottom:8px; }
+        .openclaw-card-desc { font-size:0.9rem; color:rgba(255,255,255,0.6); line-height:1.6; }
+        .openclaw-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#818cf8; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; margin-bottom:20px; }
+        @media(max-width:640px) { .openclaw-grid { grid-template-columns:1fr; } }
+
+        /* Hamburger Menu */
+@media (max-width: 768px) {
+.nav-links.open {
+                display: flex !important;
+            }
+            
+            .nav-links a {
+                padding: 12px 0 !important;
+                font-size: 1rem !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            
+            .nav-links a:last-child {
+                margin-top: 8px;
+                text-align: center;
+                border-bottom: none;
+            }
+            
+            /* Hero */
+            .hero { padding: 3rem 0 2rem; }
+            .hero h1 { font-size: clamp(2.2rem, 8vw, 6rem) !important; }
+            .hero-subtitle { font-size: 1.1rem; }
+            .cta-group { flex-direction: column; }
+            .cta-group .btn { text-align: center; width: 100%; }
+            
+            /* Works With */
+            .works-with-logos { font-size: 1.2rem; gap: 1rem; }
+            
+            /* Section headers */
+            .section-header h2 { font-size: clamp(1.8rem, 5vw, 4rem); }
+            .section-header p { font-size: 1rem; }
+            .section-title { font-size: clamp(1.5rem, 3vw, 2.6rem) !important; }
+            .section-body { font-size: 0.95rem; }
+            
+            /* Tools grid */
+            .tools-grid { grid-template-columns: 1fr !important; }
+            
+            /* Steps */
+            .steps { grid-template-columns: 1fr !important; gap: 2rem; }
+            .step-number { font-size: 3.5rem; }
+            .step h3 { font-size: 1.4rem; }
+            
+            /* MCP pills */
+            .mcp-pills { grid-template-columns: 1fr !important; }
+            
+            /* Use cases */
+            .usecases-grid { grid-template-columns: 1fr !important; }
+            
+            /* Platform tabs - horizontal scroll */
+            .platform-tabs {
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 8px;
+            }
+            .platform-tabs::-webkit-scrollbar { display: none; }
+            .ptab { white-space: nowrap; flex-shrink: 0; }
+            
+            /* Config */
+            pre { font-size: 0.8rem; padding: 1rem; }
+            .url-value { font-size: 0.85rem; }
+            
+            /* OpenClaw grid */
+            .openclaw-grid { grid-template-columns: 1fr !important; }
+            .openclaw-section { padding: 60px 0; }
+            
+            /* Footer */
+            .footer-content { flex-direction: column; text-align: center; }
+            .footer-links { justify-content: center; }
+            
+            /* Sections padding */
+            .tools-section, .how-it-works, .config-section { padding: 4rem 0; }
+            .mcp-section, .usecases-section { padding: 50px 0; }
+            
+            /* Container padding */
+            .container { padding: 0 1rem; }
+            
+            /* Header relative for dropdown positioning */
+            header .container { position: relative; }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2.2rem !important; }
+            .hero-subtitle { font-size: 1rem; }
+            .works-with-logos { font-size: 1rem; gap: 0.5rem; }
+            .tool-card { padding: 1.5rem; }
+            .mcp-pill { padding: 16px; }
+            .openclaw-card { padding: 20px; }
+        }
+
+        /* ═══════════════════════════════════════
+           MOBILE BREAKPOINTS
+        ═══════════════════════════════════════ */
+        @media (max-width: 768px) {
+            /* Nav */
+.nav-menu.open { display: flex; }
+            .nav-menu a {
+                padding: 12px 24px !important;
+                font-size: 1rem !important;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .nav-menu a[href*="oauth"] {
+                margin: 8px 16px;
+                width: calc(100% - 32px);
+                text-align: center;
+                border-radius: 6px;
+            }
+
+            /* Hero */
+            .hero { padding: 100px 0 60px; }
+            .hero h1 { font-size: clamp(2.2rem, 10vw, 3.5rem) !important; }
+            .hero-subtitle { font-size: 1rem !important; }
+            .cta-group { flex-direction: column; gap: 12px; }
+            .btn { width: 100%; text-align: center; }
+
+            /* Works with */
+            .works-with-logos { flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+            /* MCP pills */
+            .mcp-pills { flex-direction: column; }
+
+            /* Use cases */
+            .usecase-cols { flex-direction: column !important; }
+            .usecase-col { width: 100% !important; }
+
+            /* Tools grid */
+            .tools-grid { grid-template-columns: 1fr 1fr !important; }
+
+            /* Platform tabs */
+            .platform-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; }
+            .ptab { white-space: nowrap; flex-shrink: 0; }
+
+            /* Config */
+            .config-container { padding: 20px !important; }
+            .config-urls { flex-direction: column !important; }
+            pre { font-size: 0.75rem; overflow-x: auto; }
+
+            /* OpenClaw grid */
+            .openclaw-grid { grid-template-columns: 1fr !important; }
+
+            /* Section padding */
+            section { padding: 60px 0 !important; }
+            .section-title { font-size: 1.8rem !important; }
+
+            /* Container padding */
+            .container { padding: 0 16px !important; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2rem !important; }
+            .tools-grid { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Hamburger / Responsive Nav ── */
+        .hamburger {
+            display: none;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            line-height: 1;
+        }
+        @media (max-width: 768px) {
+            .hamburger { display: block; }
+            nav.nav-links {
+                display: none !important;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #050709;
+                border-top: 1px solid rgba(255,255,255,0.08);
+                flex-direction: column !important;
+                gap: 0 !important;
+                padding: 8px 0;
+                z-index: 999;
+            }
+            nav.nav-links.open { display: flex !important; }
+            nav.nav-links a {
+                padding: 12px 24px !important;
+                font-size: 1rem !important;
+                width: 100%;
+                box-sizing: border-box;
+                border-radius: 0 !important;
+            }
+            nav.nav-links a[href*="oauth"] {
+                margin: 8px 16px;
+                width: calc(100% - 32px);
+                text-align: center;
+                border-radius: 6px !important;
+            }
+            /* Hero */
+            .hero { padding: 100px 0 60px !important; }
+            .hero h1 { font-size: clamp(2rem, 10vw, 3rem) !important; }
+            .hero-subtitle { font-size: 0.95rem !important; }
+            /* Works with */
+            .works-with-logos { flex-wrap: wrap !important; gap: 10px !important; justify-content: center !important; }
+            /* MCP pills */
+            .mcp-pills { flex-direction: column !important; }
+            /* Use cases */
+            .usecase-cols { flex-direction: column !important; }
+            .usecase-col { width: 100% !important; }
+            /* Tools grid */
+            .tools-grid { grid-template-columns: 1fr 1fr !important; }
+            /* Platform tabs */
+            .platform-tabs { overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+            .ptab { white-space: nowrap; flex-shrink: 0; }
+            /* Config */
+            .config-urls { flex-direction: column !important; }
+            pre { font-size: 0.75rem; overflow-x: auto; }
+            /* OpenClaw grid */
+            .openclaw-grid { grid-template-columns: 1fr !important; }
+            /* Section padding */
+            .mcp-section, .usecase-section, .tools-section, .openclaw-section, .config-section { padding: 60px 0 !important; }
+            .section-title { font-size: 1.8rem !important; }
+            .container { padding: 0 16px !important; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.9rem !important; }
+            .tools-grid { grid-template-columns: 1fr !important; }
+        }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE OPTIMIZATIONS - Add this just before </style> in the <head>
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. FAQ Accordion (mobile only) ── */
+@media (max-width: 768px) {
+    .faq-item {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .faq-item:hover {
+        background: rgba(14, 165, 233, 0.05) !important;
+    }
+    .faq-question {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .faq-question h3 {
+        margin-bottom: 0 !important;
+        transition: color 0.3s;
+    }
+    .faq-icon {
+        color: var(--electric);
+        font-size: 1.4rem;
+        font-weight: 300;
+        flex-shrink: 0;
+        margin-left: 12px;
+        transition: transform 0.3s;
+        font-family: system-ui;
+    }
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, padding 0.35s ease;
+        padding-top: 0;
+    }
+    .faq-item.open .faq-answer {
+        max-height: 500px;
+        padding-top: 12px;
+    }
+    .faq-item.open .faq-icon {
+        transform: rotate(45deg);
+    }
+    .faq-item.open .faq-question h3 {
+        color: var(--electric);
+    }
+}
+
+/* ── 2. Tools Carousel (mobile only) ── */
+@media (max-width: 768px) {
+    .tools-carousel-wrapper {
+        position: relative;
+    }
+    #tools-carousel {
+        display: flex !important;
+        grid-template-columns: unset !important;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 16px;
+        padding: 0 16px 16px;
+    }
+    #tools-carousel::-webkit-scrollbar {
+        display: none;
+    }
+    #tools-carousel .tool-card {
+        min-width: 85vw;
+        scroll-snap-align: center;
+        flex-shrink: 0;
+    }
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        transition: background 0.2s;
+    }
+    .carousel-dot.active {
+        background: var(--electric);
+    }
+}
+@media (min-width: 769px) {
+    .carousel-dots { display: none; }
+}
+
+/* ── 3. Use Cases Tab Switcher (mobile only) ── */
+@media (max-width: 768px) {
+    .usecase-tabs {
+        display: flex;
+        gap: 0;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .usecase-tab {
+        flex: 1;
+        padding: 12px 10px;
+        text-align: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: rgba(255,255,255,0.03);
+        color: rgba(255,255,255,0.5);
+        transition: all 0.2s;
+        border: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .usecase-tab:hover {
+        background: rgba(255,255,255,0.06);
+    }
+    .usecase-tab.active {
+        background: var(--electric);
+        color: #fff;
+    }
+    .usecase-col {
+        display: none !important;
+    }
+    .usecase-col.active {
+        display: block !important;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+}
+@media (min-width: 769px) {
+    .usecase-tabs { display: none !important; }
+    .usecase-col { display: block !important; }
+}
+
+/* ── 4. OpenClaw Cards → 2-column on mobile ── */
+@media (max-width: 768px) {
+    .openclaw-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    .openclaw-card {
+        padding: 16px !important;
+    }
+    .openclaw-card-icon {
+        font-size: 1.4rem !important;
+        margin-bottom: 8px !important;
+    }
+    .openclaw-card-title {
+        font-size: 0.85rem !important;
+    }
+    .openclaw-card-desc {
+        font-size: 0.78rem !important;
+        line-height: 1.5 !important;
+    }
+}
+@media (max-width: 400px) {
+    .openclaw-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ── 5. Platform Tabs - Scroll hint gradient ── */
+@media (max-width: 768px) {
+    .platform-tabs-wrapper {
+        position: relative;
+    }
+    .platform-tabs-wrapper::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        background: linear-gradient(to right, transparent, var(--bg));
+        pointer-events: none;
+    }
+    .platform-tabs {
+        scroll-behavior: smooth;
+    }
+}
+
+/* ── 6. About Section → 2-column on mobile ── */
+@media (max-width: 768px) {
+    #about .cards-grid,
+    #about > .container > div:nth-child(2) {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    #about .cards-grid > div,
+    #about > .container > div:nth-child(2) > div {
+        padding: 16px !important;
+    }
+    #about .cards-grid h3,
+    #about > .container > div:nth-child(2) h3 {
+        font-size: 0.85rem !important;
+    }
+    #about .cards-grid p,
+    #about > .container > div:nth-child(2) p {
+        font-size: 0.78rem !important;
+        line-height: 1.5 !important;
+    }
+}
+@media (max-width: 400px) {
+    #about .cards-grid,
+    #about > .container > div:nth-child(2) {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ── 7. Hero Section - Tighter mobile spacing ── */
+@media (max-width: 768px) {
+    .hero {
+        padding: 60px 0 40px !important;
+    }
+    .hero h1 {
+        font-size: clamp(2rem, 9vw, 3rem) !important;
+    }
+    .hero-subtitle {
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
+        margin-bottom: 2rem !important;
+    }
+    .cta-group .btn {
+        width: 100% !important;
+        height: 52px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* ── 8. Nav - Fix hamburger (standardize to nav-links) ── */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block !important;
+    }
+    nav.nav-links {
+        display: none !important;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg);
+        border-top: 1px solid rgba(255,255,255,0.08);
+        flex-direction: column !important;
+        gap: 0 !important;
+        padding: 8px 0;
+        z-index: 999;
+    }
+    nav.nav-links.open {
+        display: flex !important;
+    }
+    nav.nav-links a {
+        padding: 14px 24px !important;
+        font-size: 1rem !important;
+        width: 100%;
+        box-sizing: border-box;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    nav.nav-links a:last-child {
+        margin: 12px 16px;
+        width: calc(100% - 32px);
+        text-align: center;
+        border-radius: 6px !important;
+        border-bottom: none;
+    }
+}
+
+/* ── 9. Works With - Static row, centered, subtle opacity ── */
+@media (max-width: 768px) {
+    .works-with-logos {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 1rem !important;
+    }
+}
+
+/* ── 10. Footer - 2-column grid on mobile ── */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column !important;
+        text-align: center;
+        gap: 1.5rem !important;
+    }
+    .footer-links {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        justify-items: center;
+    }
+    .footer-links a {
+        font-size: 0.9rem;
+    }
+}
+
+/* ── General mobile polish ── */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px !important;
+    }
+    section {
+        padding: 50px 0 !important;
+    }
+    .section-header {
+        margin-bottom: 3rem !important;
+    }
+    .section-header h2 {
+        font-size: clamp(1.6rem, 5vw, 2.5rem) !important;
+    }
+    .section-title {
+        font-size: clamp(1.5rem, 4vw, 2rem) !important;
+    }
+    .section-body {
+        font-size: 0.92rem !important;
+    }
+}
+
+
+    </style>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="apple-touch-icon" href="/static/favicon.png">
+</head>
+<body>
+    <!-- Subtle static radial gradient in hero -->
+    
+    <!-- Header -->
+    <header style="position:relative;">
+        <div class="container" style="display:flex;align-items:center;justify-content:space-between;">
+            <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;"><img src="/static/favicon-symbol-white.svg" alt="hellenicAI" style="height:52px;width:auto;"></a>
+            <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open');this.textContent=this.textContent==='☰'?'✕':'☰'" aria-label="Toggle menu">☰</button>
+            <nav class="nav-links" style="display:flex;gap:28px;align-items:center;">
+                <a href="#mcp" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0074e0'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">What is MCP?</a>
+                <a href="#usecases" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0074e0'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">Use Cases</a>
+                <a href="#tools" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#0074e0'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">Tools</a>
+                <a href="#openclaw" style="color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color 0.2s;" onmouseover="this.style.color='#818cf8'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰'">OpenClaw</a>
+                <a href="https://google-ads-mcp.hellenicai.com/oauth/start" style="background:#0074e0;color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;padding:8px 18px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='#005bb5'" onmouseout="this.style.background='#0074e0'" onclick="this.parentElement.classList.remove('open');document.querySelector('.hamburger').textContent='☰';connectGoogleAds();return false;">Connect</a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1><span class="gradient-text">Manage</span><br><span class="gradient-text">Google Ads</span><br><span class="hero-plain">through conversation.</span></h1>
+                <p class="hero-subtitle">
+                    Connect your Google Ads accounts to Claude, ChatGPT, Gemini, OpenClaw or hellenicAI. Manage campaigns, analyze performance, and optimize budgets through natural language. Offered for <strong style="color:#f59e0b">FREE</strong> by <strong>hellenicAI</strong>, the AI division of Hellenic Technologies.
+                </p>
+                <div class="cta-group">
+                    <a href="https://google-ads-mcp.hellenicai.com/oauth/start" class="btn btn-primary" onclick="connectGoogleAds();return false;">Connect Google Ads</a>
+                </div>
+            </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Works With -->
+    <section class="works-with">
+        <div class="container">
+            <div class="works-with-label">Works with</div>
+            <div class="works-with-logos">
+                <span>Claude</span>
+                <span>·</span>
+                <span>ChatGPT</span>
+                <span>·</span>
+                <span>Gemini</span>
+                <span>·</span>
+                <span>Cursor</span>
+                <span>·</span>
+                <span>hellenicAI</span>
+                <span>·</span>
+                <span>OpenClaw</span>
+            </div>
+        </div>
+    </section>
+    
+
+    <!-- What is MCP -->
+    <section class="mcp-section" id="mcp">
+        <div class="container">
+            <div class="section-label">PROTOCOL</div>
+            <h2 class="section-title">What is MCP?</h2>
+            <p class="section-body">MCP (Model Context Protocol) is an open standard developed by Anthropic that allows AI assistants like Claude, ChatGPT, and Gemini to connect to external tools and data sources in real time. Instead of copy-pasting campaign data into a chat window, your AI assistant calls our server directly — reading live data, making changes, and reporting back — all within the conversation.</p>
+            <div class="mcp-pills">
+                <div class="mcp-pill">
+                    <span class="pill-icon">🔌</span>
+                    <div>
+                        <div class="pill-title">Open Standard</div>
+                        <div class="pill-desc">Developed by Anthropic, supported by all major AI platforms</div>
+                    </div>
+                </div>
+                <div class="mcp-pill">
+                    <span class="pill-icon">⚡</span>
+                    <div>
+                        <div class="pill-title">Real-Time</div>
+                        <div class="pill-desc">Live data from Google Ads API, not cached snapshots</div>
+                    </div>
+                </div>
+                <div class="mcp-pill">
+                    <span class="pill-icon">🔒</span>
+                    <div>
+                        <div class="pill-title">Secure</div>
+                        <div class="pill-desc">OAuth 2.0 authentication, tokens stored server-side, never exposed to the model</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prompt Use Cases -->
+    <section class="usecases-section" id="usecases">
+        <div class="container">
+            <div class="section-label">USE CASES</div>
+            <h2 class="section-title">What can you ask?</h2>
+            <p class="section-body">Whether you run a digital agency managing dozens of client accounts or a business running your own campaigns — here's what you can do through conversation.</p>
+            <!-- Mobile Tab Switcher -->
+            <div class="usecase-tabs">
+                <button class="usecase-tab active" data-target="usecase-agency">🏢 Agencies</button>
+                <button class="usecase-tab" data-target="usecase-business">🏪 Businesses</button>
+            </div>
+            
+            <div class="usecases-grid">
+                <!-- Agency -->
+                <div class="usecase-col usecase-agency active">
+                    <div class="usecase-col-header agency">🏢 For Agencies</div>
+                    <div class="usecase-label">Proactive 🤖 <span class="label-sub">AI acts automatically</span></div>
+                    <div class="prompt-card agency">
+                        <code>&quot;Alert me every Monday with last week's spend vs budget for all client accounts&quot;</code>
+                    </div>
+                    <div class="prompt-card agency">
+                        <code>&quot;Flag any campaign whose CPC jumped more than 20% week-over-week&quot;</code>
+                    </div>
+                    <div class="prompt-card agency">
+                        <code>&quot;Pause any ad group with CTR below 0.5% and spend above €50 this month&quot;</code>
+                    </div>
+                    <div class="usecase-label" style="margin-top:20px">Reactive 💬 <span class="label-sub">You ask, AI answers</span></div>
+                    <div class="prompt-card agency">
+                        <code>&quot;Show me the top 5 search terms driving conversions for Acme Corp this month&quot;</code>
+                    </div>
+                    <div class="prompt-card agency">
+                        <code>&quot;Which client campaigns are overspending their monthly budget right now?&quot;</code>
+                    </div>
+                    <div class="prompt-card agency">
+                        <code>&quot;Increase the budget for all campaigns tagged 'Black Friday' by 30%&quot;</code>
+                    </div>
+                </div>
+                <!-- Direct Business -->
+                <div class="usecase-col usecase-business">
+                    <div class="usecase-col-header business">🏪 For Businesses</div>
+                    <div class="usecase-label">Proactive 🤖 <span class="label-sub">AI acts automatically</span></div>
+                    <div class="prompt-card business">
+                        <code>&quot;Notify me if my main campaign drops below a 3x ROAS&quot;</code>
+                    </div>
+                    <div class="prompt-card business">
+                        <code>&quot;Every Friday, send me a summary: spend, clicks, conversions, ROAS&quot;</code>
+                    </div>
+                    <div class="prompt-card business">
+                        <code>&quot;Pause my brand campaign if daily spend exceeds €200&quot;</code>
+                    </div>
+                    <div class="usecase-label" style="margin-top:20px">Reactive 💬 <span class="label-sub">You ask, AI answers</span></div>
+                    <div class="prompt-card business">
+                        <code>&quot;What keywords are wasting my budget with zero conversions this month?&quot;</code>
+                    </div>
+                    <div class="prompt-card business">
+                        <code>&quot;How does this week's performance compare to last week?&quot;</code>
+                    </div>
+                    <div class="prompt-card business">
+                        <code>&quot;Lower the bid on all keywords with Quality Score below 5&quot;</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools -->
+    <section class="tools-section" id="tools">
+        <div class="container">
+            <div class="section-header">
+                <h2>Eleven tools.<br>Infinite possibilities.</h2>
+                <p>Complete control over your Google Ads campaigns through simple conversation</p>
+            </div>
+            <div class="tools-carousel-wrapper">
+                <div class="tools-grid" id="tools-carousel">
+                    <div class="tool-card">
+                    <div class="tool-number">01</div>
+                    <h3>connect_google_ads</h3>
+                    <p>OAuth flow initiation to securely connect your Google Ads account</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">02</div>
+                    <h3>list_accounts</h3>
+                    <p>List all accessible customer accounts in your Google Ads hierarchy</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">03</div>
+                    <h3>get_account_summary</h3>
+                    <p>Spend, impressions, clicks, conversions for any date range you need</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">04</div>
+                    <h3>list_campaigns</h3>
+                    <p>All campaigns with status, budget, type — complete visibility</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">05</div>
+                    <h3>get_campaign_performance</h3>
+                    <p>Deep metrics: CTR, CPC, ROAS, conversions — everything that matters</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">06</div>
+                    <h3>list_ad_groups</h3>
+                    <p>Ad groups with bids and status for granular campaign management</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">07</div>
+                    <h3>get_keywords</h3>
+                    <p>Keyword performance with quality scores — optimize what works</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">08</div>
+                    <h3>get_search_terms_report</h3>
+                    <p>Actual search queries triggering your ads — real user intent revealed</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">09</div>
+                    <h3>pause_campaign</h3>
+                    <p>Pause any campaign instantly when you need immediate control</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">10</div>
+                    <h3>enable_campaign</h3>
+                    <p>Re-enable a paused campaign and get back in the game</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-number">11</div>
+                    <h3>update_campaign_budget</h3>
+                    <p>Change daily budget in real time — adapt to performance instantly</p>
+                </div>
+            </div>
+                <div class="carousel-dots" id="carousel-dots"></div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>Three steps to start</h2>
+                <p>From connection to control in minutes</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Connect</h3>
+                    <p>Authenticate your Google Ads account through secure OAuth flow</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Add MCP URL</h3>
+                    <p>Configure your AI assistant with the MCP server endpoint</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Start managing</h3>
+                    <p>Control campaigns through natural conversation — no dashboard needed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Config -->
+
+    <!-- OpenClaw Section -->
+    <section class="openclaw-section" id="openclaw">
+        <div class="container">
+            <div class="openclaw-badge">🦾 OpenClaw Integration</div>
+            <h2 class="section-title">Built for OpenClaw agents</h2>
+            <p class="section-body" style="max-width:600px;">OpenClaw agents can autonomously manage your Google Ads campaigns — monitoring performance, adjusting budgets, pausing underperformers, and reporting back — without you lifting a finger.</p>
+            <div class="openclaw-grid">
+                <div class="openclaw-card">
+                    <div class="openclaw-card-icon">📊</div>
+                    <div class="openclaw-card-title">Autonomous Performance Monitoring</div>
+                    <div class="openclaw-card-desc">Your OpenClaw agent checks campaign performance on a schedule and alerts you when ROAS drops, CPC spikes, or budgets are about to run out.</div>
+                </div>
+                <div class="openclaw-card">
+                    <div class="openclaw-card-icon">⚡</div>
+                    <div class="openclaw-card-title">Instant Budget Adjustments</div>
+                    <div class="openclaw-card-desc">Tell your agent "increase budget on all campaigns with ROAS above 4x by 20%" — it executes immediately, no dashboard needed.</div>
+                </div>
+                <div class="openclaw-card">
+                    <div class="openclaw-card-icon">🛑</div>
+                    <div class="openclaw-card-title">Auto-Pause Underperformers</div>
+                    <div class="openclaw-card-desc">Set rules in plain language: "Pause any ad group spending more than €50 with zero conversions this month." Your agent enforces them automatically.</div>
+                </div>
+                <div class="openclaw-card">
+                    <div class="openclaw-card-icon">📋</div>
+                    <div class="openclaw-card-title">Weekly Reports on Autopilot</div>
+                    <div class="openclaw-card-desc">Schedule your agent to send you a performance summary every Monday morning — spend, clicks, conversions, ROAS — across all accounts.</div>
+                </div>
+                <div class="openclaw-card">
+                    <div class="openclaw-card-icon">🔍</div>
+                    <div class="openclaw-card-title">Keyword Intelligence</div>
+                    <div class="openclaw-card-desc">Ask "which keywords are wasting my budget with zero conversions?" and get an instant answer with actionable recommendations.</div>
+                </div>
+                <div class="openclaw-card">
+                    <div class="openclaw-card-icon">🏢</div>
+                    <div class="openclaw-card-title">Multi-Account Agency Management</div>
+                    <div class="openclaw-card-desc">Manage all your client accounts from one OpenClaw agent. Ask "which client is overspending their monthly budget?" across your entire portfolio.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="config-section" id="setup">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">SETUP</div>
+                <h2>Connect in 3 steps</h2>
+                <p>Works with every major AI platform</p>
+            </div>
+
+            <!-- Platform Tabs -->
+            <div class="platform-tabs-wrapper">
+                <div class="platform-tabs">
+                <button class="ptab active" onclick="showPlatform('claude-desktop',this)">Claude Desktop</button>
+                <button class="ptab" onclick="showPlatform('claude-web',this)">Claude.ai</button>
+                <button class="ptab" onclick="showPlatform('chatgpt',this)">ChatGPT</button>
+                <button class="ptab" onclick="showPlatform('gemini',this)">Gemini</button>
+                <button class="ptab" onclick="showPlatform('cursor',this)">Cursor</button>
+                <button class="ptab" onclick="showPlatform('windsurf',this)">Windsurf</button>
+                <button class="ptab" onclick="showPlatform('openclaw',this)">OpenClaw</button>
+                <button class="ptab" onclick="showPlatform('hellenic',this)">hellenicAI</button>
+                <button class="ptab" onclick="showPlatform('api',this)">Direct API</button>
+            </div>
+            </div>
+
+            <!-- Claude Desktop -->
+            <div class="platform-panel" id="panel-claude-desktop">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and authorize via Google OAuth. You'll get a session ID on the success page.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Edit your Claude Desktop config</strong><br>Open <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> (Mac) or <code>%APPDATA%\Claude\claude_desktop_config.json</code> (Windows) and add the block below. Replace <code>YOUR_SESSION_ID</code> with the ID from step 1.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Restart Claude Desktop</strong><br>The 🔧 tools icon will appear in the chat bar. Ask: <em>"List my Google Ads campaigns"</em> to verify.</div></div>
+                </div>
+                <pre><code>{
+  "mcpServers": {
+    "hellenic-google-ads": {
+      "url": "https://google-ads-mcp.hellenicai.com/mcp",
+      "headers": {
+        "X-Session-ID": "YOUR_SESSION_ID"
+      }
+    }
+  }
+}</code></pre>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 Uses MCP Streamable HTTP transport — no local server process needed.</p>
+            </div>
+
+            <!-- Claude.ai web -->
+            <div class="platform-panel hidden" id="panel-claude-web">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and complete the OAuth flow. Copy your session ID from the success page.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Open Claude.ai → Settings → Integrations</strong><br>Click <em>Add Integration</em> and enter the MCP server URL below. Add your session ID as a custom header <code>X-Session-ID</code>.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Start a new conversation</strong><br>Claude will automatically have access to your Google Ads tools. Try: <em>"What's my total ad spend this month?"</em></div></div>
+                </div>
+                <div class="config-urls">
+                    <div class="url-box"><div class="url-label">MCP Endpoint (Streamable HTTP)</div><div class="url-value">https://google-ads-mcp.hellenicai.com/mcp</div></div>
+                    <div class="url-box"><div class="url-label">Header</div><div class="url-value">X-Session-ID: YOUR_SESSION_ID</div></div>
+                </div>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 Claude.ai supports remote MCP servers natively — no desktop app required.</p>
+            </div>
+
+            <!-- ChatGPT -->
+            <div class="platform-panel hidden" id="panel-chatgpt">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and complete the OAuth flow.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>ChatGPT → Settings → Connectors → Add</strong><br>Paste the MCP endpoint URL. ChatGPT will auto-discover all available tools.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Use in any GPT-4o conversation</strong><br>Ask: <em>"Show me my top 5 campaigns by spend"</em> — ChatGPT calls the MCP server live.</div></div>
+                </div>
+                <div class="config-urls">
+                    <div class="url-box"><div class="url-label">MCP Endpoint</div><div class="url-value">https://google-ads-mcp.hellenicai.com/mcp</div></div>
+                </div>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">⚠️ ChatGPT MCP support requires ChatGPT Plus or Team plan.</p>
+            </div>
+
+            <!-- Gemini -->
+            <div class="platform-panel hidden" id="panel-gemini">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and authorize via OAuth.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Open Google AI Studio → Extensions → MCP</strong><br>Add a new MCP server and paste the endpoint URL. Gemini will discover all tools automatically.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Ask Gemini about your campaigns</strong><br>Try: <em>"Which of my ad groups has the worst CTR this week?"</em></div></div>
+                </div>
+                <div class="config-urls">
+                    <div class="url-box"><div class="url-label">MCP Endpoint</div><div class="url-value">https://google-ads-mcp.hellenicai.com/mcp</div></div>
+                </div>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 Also works with Gemini Advanced via Google Workspace integrations.</p>
+            </div>
+
+            <!-- Cursor -->
+            <div class="platform-panel hidden" id="panel-cursor">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and complete the OAuth flow. Copy your session ID.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Open Cursor → Settings → MCP</strong><br>Add a new server entry with the URL and your session ID header.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Use in Cursor Agent or Composer</strong><br>Ask your coding agent: <em>"Pull my Google Ads performance data and build a dashboard"</em> — it fetches live data and writes the code.</div></div>
+                </div>
+                <pre><code>{
+  "mcpServers": {
+    "hellenic-google-ads": {
+      "url": "https://google-ads-mcp.hellenicai.com/mcp",
+      "headers": {
+        "X-Session-ID": "YOUR_SESSION_ID"
+      }
+    }
+  }
+}</code></pre>
+            </div>
+
+            <!-- Windsurf -->
+            <div class="platform-panel hidden" id="panel-windsurf">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and complete the OAuth flow.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Open Windsurf → Settings → MCP Servers</strong><br>Add the endpoint URL and session header. Windsurf Cascade will auto-discover all tools.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Use in Cascade</strong><br>Ask: <em>"Analyze my Google Ads and suggest budget optimizations"</em> — Cascade fetches live data and reasons over it.</div></div>
+                </div>
+                <div class="config-urls">
+                    <div class="url-box"><div class="url-label">MCP Endpoint</div><div class="url-value">https://google-ads-mcp.hellenicai.com/mcp</div></div>
+                    <div class="url-box"><div class="url-label">Header</div><div class="url-value">X-Session-ID: YOUR_SESSION_ID</div></div>
+                </div>
+            </div>
+
+            <!-- OpenClaw -->
+            <div class="platform-panel hidden" id="panel-openclaw">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and complete the OAuth flow. Copy your session ID.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Add MCP server in OpenClaw config</strong><br>Edit your <code>openclaw.json</code> and add the MCP server entry below, or run: <code>openclaw mcp add https://google-ads-mcp.hellenicai.com/mcp</code></div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Your agent manages Google Ads autonomously</strong><br>Set up cron jobs, heartbeat checks, or just ask: <em>"Pause all campaigns with ROAS below 2x"</em> — OpenClaw executes it.</div></div>
+                </div>
+                <pre><code>{
+  "mcp": {
+    "servers": [{
+      "name": "hellenic-google-ads",
+      "url": "https://google-ads-mcp.hellenicai.com/mcp",
+      "headers": {
+        "X-Session-ID": "YOUR_SESSION_ID"
+      }
+    }]
+  }
+}</code></pre>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 OpenClaw agents can run Google Ads tasks on a schedule — no human needed.</p>
+            </div>
+
+            <!-- hellenicAI -->
+            <div class="platform-panel hidden" id="panel-hellenic">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Click <em>Connect Google Ads</em> above and authorize via Google OAuth. You'll get a session ID on the success page.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Open hellenicAI → Settings → MCP Servers → Add Server</strong><br>Select <em>Streamable HTTP</em> as the transport type. Paste the MCP endpoint URL below and add your session ID as the <code>X-Session-ID</code> header.</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Your hellenicAI agent is now connected</strong><br>The tools icon will appear in your agent's toolbar. Ask: <em>"List my Google Ads campaigns"</em> to verify the connection.</div></div>
+                </div>
+                <div class="config-urls">
+                    <div class="url-box"><div class="url-label">MCP Endpoint (Streamable HTTP)</div><div class="url-value">https://google-ads-mcp.hellenicai.com/mcp</div></div>
+                    <div class="url-box"><div class="url-label">Transport</div><div class="url-value">Streamable HTTP</div></div>
+                    <div class="url-box"><div class="url-label">Header</div><div class="url-value">X-Session-ID: YOUR_SESSION_ID</div></div>
+                </div>
+                <p style="color:rgba(255,255,255,0.4);font-size:0.8rem;margin-top:12px;">💡 Uses MCP Streamable HTTP transport — no local server process needed.</p>
+            </div>
+
+            <!-- Direct API -->
+            <div class="platform-panel hidden" id="panel-api">
+                <div class="setup-steps">
+                    <div class="setup-step"><span class="step-num">1</span><div><strong>Connect your Google Ads account</strong><br>Visit <code>https://google-ads-mcp.hellenicai.com/oauth/start?session_id=MY_SESSION</code> — replace <code>MY_SESSION</code> with any unique string.</div></div>
+                    <div class="setup-step"><span class="step-num">2</span><div><strong>Call the MCP endpoint directly</strong><br>Use any HTTP client. Pass your session ID in the <code>X-Session-ID</code> header. The server speaks MCP Streamable HTTP (JSON-RPC 2.0).</div></div>
+                    <div class="setup-step"><span class="step-num">3</span><div><strong>Integrate into your own app or agent</strong><br>Build custom automations, dashboards, or AI workflows using the full Google Ads API surface.</div></div>
+                </div>
+                <pre><code># List all available tools
+curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "X-Session-ID: YOUR_SESSION_ID" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
+
+# Get campaign performance
+curl -X POST https://google-ads-mcp.hellenicai.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "X-Session-ID: YOUR_SESSION_ID" \
+  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_campaigns","arguments":{}},"id":2}'</code></pre>
+                <p style="color:rgba(255,255,255,0.5);font-size:0.8rem;margin-top:8px;">💡 Full MCP spec: <a href="https://modelcontextprotocol.io" target="_blank" style="color:#0074e0;">modelcontextprotocol.io</a></p>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+    function showPlatform(id, btn) {
+        document.querySelectorAll('.platform-panel').forEach(p => p.classList.add('hidden'));
+        document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+        document.getElementById('panel-' + id).classList.remove('hidden');
+        if (btn) btn.classList.add('active');
+    }
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+    function connectGoogleAds() {
+        var sessionId = generateUUID();
+        localStorage.setItem('hellenicAI_session_id', sessionId);
+        window.open('https://google-ads-mcp.hellenicai.com/oauth/start?session_id=' + sessionId, '_blank');
+    }
+    // Close menu when any nav link is clicked
+    document.querySelectorAll('.nav-links a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.remove('open');
+            var h = document.querySelector('.hamburger');
+            if (h) h.textContent = '☰';
+        });
+    });
+    </script>
+
+<!-- FAQ Section -->
+    <section id="faq" style="padding: 80px 0; background: #050709; border-top: 1px solid rgba(255,255,255,0.06);">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; color: #ffffff; margin-bottom: 12px;">Frequently Asked Questions</h2>
+                <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #0074e0, #f59e0b); border-radius: 2px; margin: 16px auto 0;"></div>
+            </div>
+            <div style="max-width: 860px; margin: 0 auto;" class="faq-container">
+                <!-- FAQ Item 1 -->
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                    <div class="faq-question">
+                        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">What is hellenicAI?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.75; margin: 0;">hellenicAI is the AI division of Hellenic Technologies. We build tools that connect AI assistants to real-world business systems. The Google Ads MCP Server is our flagship product.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 2 -->
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                    <div class="faq-question">
+                        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">What is a Google Ads MCP Server?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.75; margin: 0;">An MCP (Model Context Protocol) server lets AI assistants like Claude, ChatGPT, and Gemini directly access and manage your Google Ads campaigns using natural language — no manual dashboard work required.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 3 -->
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                    <div class="faq-question">
+                        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">How do I connect Google Ads to my AI assistant?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.75; margin: 0;">Visit google-ads-mcp.hellenicai.com, click Connect Google Ads, complete the OAuth flow, and copy your MCP server URL into your AI assistant's settings. Takes about 3 minutes.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 4 -->
+                <div class="faq-item" onclick="toggleFaq(this)" style="margin-bottom: 16px; padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                    <div class="faq-question">
+                        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">Is hellenicAI free?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.75; margin: 0;">Yes. The Google Ads MCP Server is completely free to use. No subscription, no credit card required.</p>
+                    </div>
+                </div>
+                <!-- FAQ Item 5 -->
+                <div class="faq-item" onclick="toggleFaq(this)" style="padding: 22px 24px 22px 28px; background: #0a0f14; border: 1px solid rgba(255,255,255,0.07); border-left: 3px solid #0074e0; border-radius: 10px;">
+                    <div class="faq-question">
+                        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 10px;">Which AI platforms are supported?</h3>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.75; margin: 0;">Claude (Anthropic), ChatGPT (OpenAI), Gemini (Google), Cursor, OpenClaw, and any MCP-compatible AI assistant.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- About Hellenic Technologies Section -->
+    <section id="about" style="padding: 80px 0; background: #0a0f14; border-top: 1px solid rgba(255,255,255,0.06);">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 56px;">
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; color: #ffffff; margin-bottom: 12px;">About Hellenic Technologies</h2>
+                <p style="color: #94a3b8; font-size: 1.05rem; font-weight: 400;">The team behind hellenicAI</p>
+                <div style="width: 48px; height: 3px; background: linear-gradient(90deg, #0074e0, #f59e0b); border-radius: 2px; margin: 20px auto 0;"></div>
+            </div>
+
+            <!-- Capability Cards Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto 48px;">
+                <!-- Card 1 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🔍</div>
+                    <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Web Analytics & Server-Side Tracking</h3>
+                    <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">Senior Web Analytics teams specializing in server-side tracking and sophisticated attribution logic — connecting every touchpoint to revenue impact.</p>
+                </div>
+                <!-- Card 2 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">📊</div>
+                    <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Business Intelligence</h3>
+                    <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">Dedicated BI team with deep expertise in BigQuery, Clickhouse, and Metabase — turning raw data into actionable business insights.</p>
+                </div>
+                <!-- Card 3 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🤖</div>
+                    <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">AI & Marketing Technology</h3>
+                    <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">AI teams focused on the business and marketing perspective — like the Google Ads MCP Server — bridging cutting-edge AI with real marketing outcomes.</p>
+                </div>
+                <!-- Card 4 -->
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; transition: border-color 0.2s, box-shadow 0.2s;" onmouseover="this.style.borderColor='rgba(0,116,224,0.4)';this.style.boxShadow='0 0 24px rgba(0,116,224,0.08)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';this.style.boxShadow='none'">
+                    <div style="width: 44px; height: 44px; background: rgba(0,116,224,0.12); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; font-size: 1.3rem;">🎯</div>
+                    <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Google Ads & Meta Ads Performance</h3>
+                    <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.75;">Senior performance marketers who leverage the full power of analytics, BI, and AI to deliver outstanding results.</p>
+                </div>
+            </div>
+
+            <!-- Results Callout Box -->
+            <div style="max-width: 860px; margin: 0 auto 40px; padding: 28px 36px; background: rgba(0,116,224,0.05); border: 1px solid rgba(0,116,224,0.2); border-radius: 14px;">
+                <p style="color: #e2e8f0; font-size: 1.05rem; line-height: 1.85; text-align: center; margin: 0;">
+                    "Businesses switching to Hellenic Technologies to manage their Google Ads and Meta Ads typically see <strong style="color: #0074e0; font-weight: 700;">up to 8x more revenue</strong> while decreasing ad costs and frustrations."
+                </p>
+            </div>
+
+            <!-- CTA Button -->
+            <div style="text-align: center;">
+                <a href="https://hellenictechnologies.com" target="_blank" style="display: inline-block; padding: 14px 34px; background: linear-gradient(135deg, #0074e0, #005bb5); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,116,224,0.25); transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                    Learn more at hellenictechnologies.com →
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+        <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="/privacy" target="_blank">Privacy Policy</a>
+                    <a href="https://www.iubenda.com/terms-and-conditions/87317011" target="_blank">Terms &amp; Conditions</a>
+                    <a href="https://github.com/patrickabedin/hellenic-google-ads-mcp" target="_blank">GitHub</a>
+                    <a href="/cdn-cgi/l/email-protection#c1a0a881a9a4adada4afa8a2b5a4a2a9afaeadaea6a8a4b2efa2aeac">Contact</a>
+                </div>
+                <div class="footer-credit">
+                    Built by <a href="https://hellenictechnologies.com" target="_blank">Hellenic Technologies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    function toggleMenu() {
+        const menu = document.querySelector('.nav-menu');
+        menu.classList.toggle('open');
+    }
+    // Close menu when any nav link is clicked
+    document.querySelectorAll('.nav-menu a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.remove('open');
+        });
+    });
+    </script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE OPTIMIZATIONS - Add this just before </body>
+═══════════════════════════════════════════════════════════════════════════ */
+
+// 1. FAQ Accordion
+function toggleFaq(item) {
+    const isOpen = item.classList.contains('open');
+    // Close all FAQ items first
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    // Open clicked one if it wasn't already open
+    if (!isOpen) item.classList.add('open');
+}
+
+// 2. Tools Carousel Dots
+function initCarouselDots() {
+    if (window.innerWidth > 768) {
+        const dots = document.getElementById('carousel-dots');
+        if (dots) dots.innerHTML = '';
+        return;
+    }
+    
+    const carousel = document.getElementById('tools-carousel');
+    const dots = document.getElementById('carousel-dots');
+    if (!carousel || !dots) return;
+    
+    const cards = carousel.querySelectorAll('.tool-card');
+    dots.innerHTML = '';
+    
+    cards.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+        dots.appendChild(dot);
+    });
+    
+    carousel.addEventListener('scroll', () => {
+        const cardWidth = carousel.querySelector('.tool-card')?.offsetWidth || carousel.offsetWidth;
+        const idx = Math.round(carousel.scrollLeft / (cardWidth + 16));
+        dots.querySelectorAll('.carousel-dot').forEach((d, i) => {
+            d.classList.toggle('active', i === idx);
+        });
+    });
+}
+
+// 3. Use Cases Tab Switcher
+function initUsecaseTabs() {
+    const tabs = document.querySelectorAll('.usecase-tab');
+    const cols = document.querySelectorAll('.usecase-col');
+    
+    if (tabs.length === 0) return;
+    
+    // Set initial state
+    if (window.innerWidth <= 768) {
+        cols.forEach((col, i) => {
+            col.classList.toggle('active', i === 0);
+        });
+    }
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.dataset.target;
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show corresponding column
+            cols.forEach(col => {
+                col.classList.remove('active');
+                if (col.classList.contains(target)) {
+                    col.classList.add('active');
+                }
+            });
+        });
+    });
+}
+
+// 4. Hamburger menu - close on link click
+function initMobileNav() {
+    const navLinks = document.querySelector('.nav-links');
+    const hamburger = document.querySelector('.hamburger');
+    
+    if (!navLinks || !hamburger) return;
+    
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('open');
+            hamburger.textContent = '☰';
+        });
+    });
+}
+
+// Initialize on load
+window.addEventListener('load', () => {
+    initCarouselDots();
+    initUsecaseTabs();
+    initMobileNav();
+});
+
+// Re-initialize on resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        initCarouselDots();
+    }, 250);
+});
+
+</script>
+</body>
+</html>
