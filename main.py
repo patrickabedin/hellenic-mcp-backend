@@ -221,21 +221,27 @@ async def oauth_callback(code: str, state: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# Initialize SSE transport at module level
+sse_transport = SseServerTransport("/messages")
+
 @app.get("/mcp")
 async def mcp_sse(request: Request):
     """MCP endpoint via Server-Sent Events (SSE)."""
-    session_id = request.query_params.get("session_id")
-    
-    async with SseServerTransport("/messages") as transport:
-        # Store session_id in context if provided
-        if session_id:
-            transport.session_id = session_id
-        
+    async with sse_transport.connect_sse(
+        request.scope, request.receive, request._send
+    ) as streams:
         await mcp_server.run(
-            transport.read_stream,
-            transport.write_stream,
+            streams[0],
+            streams[1],
             mcp_server.create_initialization_options()
         )
+
+@app.post("/messages")
+async def mcp_messages(request: Request):
+    """Handle MCP client messages posted back."""
+    await sse_transport.handle_post_message(
+        request.scope, request.receive, request._send
+    )
 
 @app.post("/mcp")
 async def mcp_http(request: Request):
