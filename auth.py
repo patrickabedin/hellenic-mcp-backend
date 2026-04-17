@@ -22,16 +22,23 @@ def get_oauth_flow() -> Flow:
         }
     }
     
+    # autogenerate_code_verifier=False disables PKCE.
+    # PKCE verifier is generated at /oauth/start but not persisted across
+    # stateless Render instances, causing 'Missing code verifier' on callback.
+    # Server-side flow with client_secret is secure without PKCE.
     flow = Flow.from_client_config(
         client_config,
         scopes=SCOPES,
         redirect_uri=os.getenv("GOOGLE_ADS_REDIRECT_URI")
     )
+    flow.code_verifier = None
     return flow
 
 def get_auth_url(session_id: str) -> str:
     """Generate OAuth2 authorization URL."""
     flow = get_oauth_flow()
+    # Disable PKCE — code_verifier is not persisted across requests (stateless Render)
+    # Plain OAuth2 with client_secret is secure enough for server-side flow
     auth_url, _ = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
