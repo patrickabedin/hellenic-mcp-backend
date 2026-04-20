@@ -3,6 +3,10 @@ import os
 import hashlib
 import base64
 import secrets
+
+# Google may include identity scopes (openid/userinfo) in token response even when
+# adwords is requested; do not fail token exchange on broader returned scopes.
+os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
 from datetime import datetime, timedelta
 from typing import Optional
 from urllib.parse import urlencode
