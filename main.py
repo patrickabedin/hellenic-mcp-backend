@@ -366,7 +366,25 @@ sse_transport = SseServerTransport("/messages")
 
 @app.get("/mcp")
 async def mcp_sse(request: Request):
-    """MCP endpoint via Server-Sent Events (SSE)."""
+    """MCP endpoint via Server-Sent Events (SSE).
+
+    Important: only open a long-lived SSE stream when the client explicitly
+    asks for `text/event-stream`. Many connector probes do a normal GET and
+    expect a fast response; streaming there can look like a timeout.
+    """
+    accept = (request.headers.get("accept") or "").lower()
+    if "text/event-stream" not in accept:
+        return JSONResponse(
+            {
+                "name": "hellenic-google-ads-mcp",
+                "mcp": f"{BASE_URL}/mcp",
+                "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
+                "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
+                "hint": "Use POST /mcp for streamable HTTP JSON-RPC. SSE clients should GET /mcp with Accept: text/event-stream.",
+            },
+            status_code=200,
+        )
+
     async with sse_transport.connect_sse(
         request.scope, request.receive, request._send
     ) as streams:
