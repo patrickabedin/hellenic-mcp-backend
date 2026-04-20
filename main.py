@@ -179,6 +179,17 @@ async def oauth_discovery():
     }
 
 
+@app.get("/.well-known/oauth-protected-resource")
+async def oauth_protected_resource():
+    """Resource metadata so clients can discover auth requirements for /mcp."""
+    return {
+        "resource": f"{BASE_URL}/mcp",
+        "authorization_servers": [OAUTH_ISSUER],
+        "bearer_methods_supported": ["header"],
+        "scopes_supported": ["google_ads"],
+    }
+
+
 @app.get("/oauth/start")
 async def oauth_start(session_id: Optional[str] = None):
     """Legacy start OAuth flow by explicit session_id."""
@@ -395,22 +406,33 @@ async def mcp_http_options():
 
 @app.post("/mcp")
 async def mcp_http(request: Request):
-    """MCP endpoint via Streamable HTTP (JSON-RPC) with bearer auth support."""
+    """MCP endpoint via Streamable HTTP (JSON-RPC) with mandatory bearer auth."""
     auth_header = request.headers.get("authorization", "")
     bearer_token = None
     if auth_header.lower().startswith("bearer "):
         bearer_token = auth_header.split(" ", 1)[1].strip()
 
-    # For connector clients (Claude/ChatGPT/Gemini), require bearer token.
-    # Legacy clients can still pass session_id in tool arguments.
+    def _unauthorized(msg: str):
+        headers = {
+            "WWW-Authenticate": (
+                f'Bearer realm="{BASE_URL}/mcp", '
+                f'authorization_uri="{BASE_URL}/oauth/authorize", '
+                f'token_uri="{BASE_URL}/oauth/token", '
+                f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource"'
+            )
+        }
+        return JSONResponse(_rpc_err(-32001, msg), status_code=401, headers=headers)
+
+    if not bearer_token:
+        return _unauthorized("Missing bearer token")
+
     session_from_bearer = None
-    if bearer_token:
-        token_row = db.get_connector_token(bearer_token)
-        if not token_row:
-            return JSONResponse(_rpc_err(-32001, "Invalid bearer token"), status_code=401)
-        if datetime.fromisoformat(token_row["expires_at"]) < datetime.utcnow():
-            return JSONResponse(_rpc_err(-32001, "Expired bearer token"), status_code=401)
-        session_from_bearer = token_row["session_id"]
+    token_row = db.get_connector_token(bearer_token)
+    if not token_row:
+        return _unauthorized("Invalid bearer token")
+    if datetime.fromisoformat(token_row["expires_at"]) < datetime.utcnow():
+        return _unauthorized("Expired bearer token")
+    session_from_bearer = token_row["session_id"]
 
     try:
         body = await request.json()
