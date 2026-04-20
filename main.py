@@ -2,6 +2,8 @@
 import os
 import secrets
 from typing import Optional, Any, Dict
+from urllib.parse import urlencode
+from datetime import datetime
 from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,6 +15,9 @@ import uvicorn
 import db
 import auth
 from mcp_server import mcp_server, TOOLS, call_tool as mcp_call_tool
+
+BASE_URL = os.getenv("PUBLIC_BASE_URL", "https://api.google-ads-mcp.hellenicai.com").rstrip("/")
+OAUTH_ISSUER = BASE_URL
 
 # Load environment variables
 load_dotenv()
@@ -159,67 +164,191 @@ async def health_check():
         "version": "1.0.0"
     }
 
+@app.get("/.well-known/oauth-authorization-server")
+async def oauth_discovery():
+    """OAuth 2.0 Authorization Server Metadata for AI connector discovery."""
+    return {
+        "issuer": OAUTH_ISSUER,
+        "authorization_endpoint": f"{BASE_URL}/oauth/authorize",
+        "token_endpoint": f"{BASE_URL}/oauth/token",
+        "response_types_supported": ["code"],
+        "grant_types_supported": ["authorization_code"],
+        "token_endpoint_auth_methods_supported": ["none"],
+        "code_challenge_methods_supported": ["S256"],
+        "scopes_supported": ["google_ads"],
+    }
+
+
 @app.get("/oauth/start")
 async def oauth_start(session_id: Optional[str] = None):
-    """Start OAuth flow - redirect to Google authorization."""
+    """Legacy start OAuth flow by explicit session_id."""
     if not session_id:
         session_id = secrets.token_urlsafe(32)
-    
+
     auth_url = auth.get_auth_url(session_id)
     return RedirectResponse(url=auth_url)
 
+
+@app.get("/oauth/authorize")
+async def oauth_authorize(
+    response_type: str,
+    client_id: Optional[str] = None,
+    redirect_uri: str = "",
+    state: Optional[str] = None,
+    code_challenge: str = "",
+    code_challenge_method: str = "",
+):
+    """OAuth authorize endpoint for connector clients (Claude/ChatGPT/Gemini)."""
+    if response_type != "code":
+        raise HTTPException(status_code=400, detail="unsupported response_type")
+    if not redirect_uri:
+        raise HTTPException(status_code=400, detail="missing redirect_uri")
+    if not code_challenge or code_challenge_method != "S256":
+        raise HTTPException(status_code=400, detail="PKCE S256 is required")
+
+    auth_req = db.create_auth_request(
+        client_id=client_id,
+        redirect_uri=redirect_uri,
+        state=state,
+        code_challenge=code_challenge,
+        code_challenge_method=code_challenge_method,
+    )
+
+    google_auth_url = auth.get_auth_url(auth_req["google_state"])
+    return RedirectResponse(url=google_auth_url)
+
 @app.get("/oauth/callback")
 async def oauth_callback(code: str, state: str):
-    """OAuth callback - exchange code for tokens."""
+    """Google OAuth callback. Supports both legacy and brokered connector flow."""
     try:
-        result = auth.exchange_code(code, state)
-        
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Authorization Complete</title>
-            <style>
-                body {{
-                    font-family: system-ui, -apple-system, sans-serif;
-                    max-width: 600px;
-                    margin: 100px auto;
-                    padding: 40px;
-                    text-align: center;
-                    background: #f8f9fa;
-                }}
-                .success {{
-                    background: #d4edda;
-                    color: #155724;
-                    padding: 20px;
-                    border-radius: 8px;
-                    margin: 20px 0;
-                }}
-                code {{
-                    background: #fff;
-                    padding: 5px 10px;
-                    border-radius: 3px;
-                    font-size: 0.9em;
-                    display: inline-block;
-                    margin: 10px 0;
-                }}
-            </style>
-        </head>
-        <body>
-            <h1>✅ Authorization Complete!</h1>
-            <div class="success">
-                <p>Your Google Ads account has been successfully connected.</p>
-                <p>Your session ID: <code>{state}</code></p>
-            </div>
-            <p>You can now close this window and return to your MCP client.</p>
-            <p>Use your session ID in all subsequent tool calls.</p>
-        </body>
-        </html>
-        """
-        return HTMLResponse(content=html)
-    
+        auth_req = db.get_auth_request_by_google_state(state)
+
+        # Legacy direct flow: state is session_id
+        if not auth_req:
+            result = auth.exchange_code(code, state)
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Authorization Complete</title>
+                <style>
+                    body {{
+                        font-family: system-ui, -apple-system, sans-serif;
+                        max-width: 600px;
+                        margin: 100px auto;
+                        padding: 40px;
+                        text-align: center;
+                        background: #f8f9fa;
+                    }}
+                    .success {{
+                        background: #d4edda;
+                        color: #155724;
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                    }}
+                    code {{
+                        background: #fff;
+                        padding: 5px 10px;
+                        border-radius: 3px;
+                        font-size: 0.9em;
+                        display: inline-block;
+                        margin: 10px 0;
+                    }}
+                </style>
+            </head>
+            <body>
+                <h1>✅ Authorization Complete!</h1>
+                <div class="success">
+                    <p>Your Google Ads account has been successfully connected.</p>
+                    <p>Your session ID: <code>{state}</code></p>
+                </div>
+                <p>You can now close this window and return to your MCP client.</p>
+                <p>Use your session ID in all subsequent tool calls.</p>
+            </body>
+            </html>
+            """
+            return HTMLResponse(content=html)
+
+        # Brokered connector flow
+        session_id = auth_req["session_id"]
+        auth.exchange_code(code, session_id)
+        db.mark_auth_request_completed(auth_req["request_id"])
+        local_code = db.issue_oauth_code(
+            request_id=auth_req["request_id"],
+            session_id=session_id,
+            client_id=auth_req.get("client_id"),
+            redirect_uri=auth_req["redirect_uri"],
+        )
+
+        params = {"code": local_code}
+        if auth_req.get("state"):
+            params["state"] = auth_req["state"]
+        redirect_target = f"{auth_req['redirect_uri']}?{urlencode(params)}"
+        return RedirectResponse(url=redirect_target)
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/oauth/token")
+async def oauth_token(request: Request):
+    """OAuth token exchange endpoint for connector clients."""
+    content_type = request.headers.get("content-type", "")
+    if "application/x-www-form-urlencoded" in content_type:
+        form = await request.form()
+        payload = dict(form)
+    else:
+        payload = await request.json()
+
+    grant_type = payload.get("grant_type")
+    code = payload.get("code")
+    redirect_uri = payload.get("redirect_uri")
+    client_id = payload.get("client_id")
+    code_verifier = payload.get("code_verifier")
+
+    if grant_type != "authorization_code":
+        return JSONResponse({"error": "unsupported_grant_type"}, status_code=400)
+    if not code or not code_verifier or not redirect_uri:
+        return JSONResponse({"error": "invalid_request"}, status_code=400)
+
+    code_row = db.get_oauth_code(code)
+    if not code_row:
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+    if int(code_row.get("used", 0)) == 1:
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+    if datetime.fromisoformat(code_row["expires_at"]) < datetime.utcnow():
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+    if redirect_uri != code_row["redirect_uri"]:
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+
+    auth_req = db.get_auth_request_by_id(code_row["request_id"])
+    if not auth_req:
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+
+    # Optional client_id match if one exists in stored auth request
+    if auth_req.get("client_id") and client_id and auth_req["client_id"] != client_id:
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+
+    if not auth.verify_pkce(
+        code_verifier=code_verifier,
+        code_challenge=auth_req["code_challenge"],
+        method=auth_req["code_challenge_method"],
+    ):
+        return JSONResponse({"error": "invalid_grant"}, status_code=400)
+
+    db.mark_oauth_code_used(code)
+    token = db.issue_connector_token(
+        session_id=code_row["session_id"],
+        client_id=auth_req.get("client_id"),
+    )
+
+    return {
+        "access_token": token["access_token"],
+        "token_type": token["token_type"],
+        "expires_in": token["expires_in"],
+        "scope": "google_ads",
+    }
 
 # Initialize SSE transport at module level
 sse_transport = SseServerTransport("/messages")
@@ -266,7 +395,23 @@ async def mcp_http_options():
 
 @app.post("/mcp")
 async def mcp_http(request: Request):
-    """MCP endpoint via Streamable HTTP (JSON-RPC)."""
+    """MCP endpoint via Streamable HTTP (JSON-RPC) with bearer auth support."""
+    auth_header = request.headers.get("authorization", "")
+    bearer_token = None
+    if auth_header.lower().startswith("bearer "):
+        bearer_token = auth_header.split(" ", 1)[1].strip()
+
+    # For connector clients (Claude/ChatGPT/Gemini), require bearer token.
+    # Legacy clients can still pass session_id in tool arguments.
+    session_from_bearer = None
+    if bearer_token:
+        token_row = db.get_connector_token(bearer_token)
+        if not token_row:
+            return JSONResponse(_rpc_err(-32001, "Invalid bearer token"), status_code=401)
+        if datetime.fromisoformat(token_row["expires_at"]) < datetime.utcnow():
+            return JSONResponse(_rpc_err(-32001, "Expired bearer token"), status_code=401)
+        session_from_bearer = token_row["session_id"]
+
     try:
         body = await request.json()
     except Exception:
@@ -329,6 +474,10 @@ async def mcp_http(request: Request):
                     if not is_notification:
                         responses.append(_rpc_err(-32602, "Missing tool name", req_id))
                     continue
+
+                # If bearer token auth exists, inject session_id so tools can run
+                if session_from_bearer:
+                    arguments.setdefault("session_id", session_from_bearer)
 
                 result_content = await mcp_call_tool(name, arguments)
                 content = []
