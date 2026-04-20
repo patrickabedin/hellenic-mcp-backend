@@ -91,6 +91,22 @@ def init_db():
             """
         )
 
+        # Dynamic client registration (RFC 7591)
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS oauth_clients (
+                client_id TEXT PRIMARY KEY,
+                client_name TEXT,
+                redirect_uris TEXT NOT NULL,
+                grant_types TEXT,
+                response_types TEXT,
+                token_endpoint_auth_method TEXT,
+                scope TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
         conn.commit()
 
 
@@ -301,6 +317,62 @@ def get_connector_token(access_token: str) -> Optional[Dict[str, Any]]:
             "SELECT * FROM connector_tokens WHERE access_token = ?", (access_token,)
         ).fetchone()
         return dict(row) if row else None
+
+
+def register_oauth_client(
+    client_name: Optional[str],
+    redirect_uris: list,
+    grant_types: Optional[list] = None,
+    response_types: Optional[list] = None,
+    token_endpoint_auth_method: Optional[str] = None,
+    scope: Optional[str] = None,
+) -> Dict[str, Any]:
+    client_id = secrets.token_urlsafe(24)
+    created_at = _utcnow_iso()
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO oauth_clients
+            (client_id, client_name, redirect_uris, grant_types, response_types,
+             token_endpoint_auth_method, scope, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                client_id,
+                client_name,
+                json.dumps(redirect_uris or []),
+                json.dumps(grant_types or ["authorization_code", "refresh_token"]),
+                json.dumps(response_types or ["code"]),
+                token_endpoint_auth_method or "none",
+                scope or "google_ads",
+                created_at,
+            ),
+        )
+        conn.commit()
+    return {
+        "client_id": client_id,
+        "client_name": client_name,
+        "redirect_uris": redirect_uris or [],
+        "grant_types": grant_types or ["authorization_code", "refresh_token"],
+        "response_types": response_types or ["code"],
+        "token_endpoint_auth_method": token_endpoint_auth_method or "none",
+        "scope": scope or "google_ads",
+        "created_at": created_at,
+    }
+
+
+def get_oauth_client(client_id: str) -> Optional[Dict[str, Any]]:
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT * FROM oauth_clients WHERE client_id = ?", (client_id,)
+        ).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        d["redirect_uris"] = json.loads(d.get("redirect_uris") or "[]")
+        d["grant_types"] = json.loads(d.get("grant_types") or "[]")
+        d["response_types"] = json.loads(d.get("response_types") or "[]")
+        return d
 
 
 def store_google_pkce_state(state: str, code_verifier: str):

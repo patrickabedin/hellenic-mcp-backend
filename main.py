@@ -168,17 +168,54 @@ async def health_check():
 @app.get("/.well-known/oauth-authorization-server")
 @app.head("/.well-known/oauth-authorization-server")
 async def oauth_discovery():
-    """OAuth 2.0 Authorization Server Metadata for AI connector discovery."""
+    """OAuth 2.0 Authorization Server Metadata for AI connector discovery (RFC 8414)."""
     return {
         "issuer": OAUTH_ISSUER,
         "authorization_endpoint": f"{BASE_URL}/oauth/authorize",
         "token_endpoint": f"{BASE_URL}/oauth/token",
+        "registration_endpoint": f"{BASE_URL}/oauth/register",
         "response_types_supported": ["code"],
-        "grant_types_supported": ["authorization_code"],
+        "grant_types_supported": ["authorization_code", "refresh_token"],
         "token_endpoint_auth_methods_supported": ["none"],
         "code_challenge_methods_supported": ["S256"],
         "scopes_supported": ["google_ads"],
     }
+
+
+@app.post("/oauth/register")
+async def oauth_register(request: Request):
+    """Dynamic Client Registration (RFC 7591) — required by Claude connectors."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    redirect_uris = body.get("redirect_uris") or []
+    if not isinstance(redirect_uris, list) or not redirect_uris:
+        return JSONResponse({"error": "invalid_redirect_uri"}, status_code=400)
+
+    client = db.register_oauth_client(
+        client_name=body.get("client_name"),
+        redirect_uris=redirect_uris,
+        grant_types=body.get("grant_types"),
+        response_types=body.get("response_types"),
+        token_endpoint_auth_method=body.get("token_endpoint_auth_method"),
+        scope=body.get("scope"),
+    )
+
+    return JSONResponse(
+        {
+            "client_id": client["client_id"],
+            "client_name": client["client_name"],
+            "redirect_uris": client["redirect_uris"],
+            "grant_types": client["grant_types"],
+            "response_types": client["response_types"],
+            "token_endpoint_auth_method": client["token_endpoint_auth_method"],
+            "scope": client["scope"],
+            "client_id_issued_at": int(datetime.utcnow().timestamp()),
+        },
+        status_code=201,
+    )
 
 
 @app.get("/.well-known/oauth-protected-resource")
