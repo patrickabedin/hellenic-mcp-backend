@@ -372,12 +372,18 @@ sse_transport = SseServerTransport("/messages")
 async def mcp_sse(request: Request):
     """MCP endpoint via Server-Sent Events (SSE).
 
-    For OAuth-capable connector probes, respond with 401 + WWW-Authenticate
-    (instead of a hanging SSE stream) unless the client explicitly requests
-    text/event-stream.
+    Behavior by Accept header:
+    - text/event-stream => open SSE stream
+    - text/html         => convenience redirect to OAuth start (browser UX)
+    - otherwise         => probe-friendly JSON metadata (HTTP 200) + auth hint
     """
     accept = (request.headers.get("accept") or "").lower()
+
     if "text/event-stream" not in accept:
+        if "text/html" in accept and request.method != "HEAD":
+            # Browser-friendly behavior that matches historical UX.
+            return RedirectResponse(url=f"{BASE_URL}/oauth/start")
+
         headers = {
             "WWW-Authenticate": (
                 f'Bearer realm="{BASE_URL}/mcp", '
@@ -388,11 +394,14 @@ async def mcp_sse(request: Request):
         }
         return JSONResponse(
             {
-                "error": "authentication_required",
+                "name": "hellenic-google-ads-mcp",
+                "mcp": f"{BASE_URL}/mcp",
+                "authentication": "required",
                 "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
                 "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
+                "hint": "Use OAuth discovery/authorize flow, then POST /mcp with Authorization: Bearer <token>.",
             },
-            status_code=401,
+            status_code=200,
             headers=headers,
         )
 
