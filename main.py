@@ -184,7 +184,19 @@ async def oauth_discovery():
 @app.get("/.well-known/oauth-protected-resource")
 @app.head("/.well-known/oauth-protected-resource")
 async def oauth_protected_resource():
-    """Resource metadata so clients can discover auth requirements for /mcp."""
+    """RFC 9728 resource metadata (origin-level)."""
+    return {
+        "resource": f"{BASE_URL}/mcp",
+        "authorization_servers": [OAUTH_ISSUER],
+        "bearer_methods_supported": ["header"],
+        "scopes_supported": ["google_ads"],
+    }
+
+
+@app.get("/.well-known/oauth-protected-resource/mcp")
+@app.head("/.well-known/oauth-protected-resource/mcp")
+async def oauth_protected_resource_mcp():
+    """RFC 9728 resource metadata (resource-specific path), used by some clients."""
     return {
         "resource": f"{BASE_URL}/mcp",
         "authorization_servers": [OAUTH_ISSUER],
@@ -375,12 +387,13 @@ async def oauth_token(request: Request):
 sse_transport = SseServerTransport("/messages")
 
 def _oauth_www_authenticate_header() -> Dict[str, str]:
+    # Use resource-specific metadata URI for maximum connector compatibility.
     return {
         "WWW-Authenticate": (
             f'Bearer realm="{BASE_URL}/mcp", '
             f'authorization_uri="{BASE_URL}/oauth/authorize", '
             f'token_uri="{BASE_URL}/oauth/token", '
-            f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource"'
+            f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource/mcp"'
         )
     }
 
