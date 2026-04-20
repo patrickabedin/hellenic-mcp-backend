@@ -374,43 +374,60 @@ async def oauth_token(request: Request):
 # Initialize SSE transport at module level
 sse_transport = SseServerTransport("/messages")
 
+def _oauth_www_authenticate_header() -> Dict[str, str]:
+    return {
+        "WWW-Authenticate": (
+            f'Bearer realm="{BASE_URL}/mcp", '
+            f'authorization_uri="{BASE_URL}/oauth/authorize", '
+            f'token_uri="{BASE_URL}/oauth/token", '
+            f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource"'
+        )
+    }
+
+
+def _validate_bearer(request: Request) -> Optional[str]:
+    auth_header = request.headers.get("authorization", "")
+    if not auth_header.lower().startswith("bearer "):
+        return None
+    token = auth_header.split(" ", 1)[1].strip()
+    row = db.get_connector_token(token)
+    if not row:
+        return None
+    if datetime.fromisoformat(row["expires_at"]) < datetime.utcnow():
+        return None
+    return row["session_id"]
+
+
 @app.get("/mcp")
 @app.head("/mcp")
 async def mcp_sse(request: Request):
-    """MCP endpoint via Server-Sent Events (SSE).
+    """MCP endpoint via SSE with strict OAuth challenge behavior for compatibility.
 
-    Behavior by Accept header:
-    - text/event-stream => open SSE stream
-    - text/html         => convenience redirect to OAuth start (browser UX)
-    - otherwise         => probe-friendly JSON metadata (HTTP 200) + auth hint
+    - HTML browsers: redirect to OAuth start
+    - Non-HTML probes without auth: 401 + WWW-Authenticate (triggers client OAuth)
+    - text/event-stream + valid bearer: open SSE stream
     """
     accept = (request.headers.get("accept") or "").lower()
 
-    if "text/event-stream" not in accept:
-        if "text/html" in accept and request.method != "HEAD":
-            # Browser-friendly behavior that matches historical UX.
-            return RedirectResponse(url=f"{BASE_URL}/oauth/start")
+    if "text/html" in accept and request.method != "HEAD":
+        return RedirectResponse(url=f"{BASE_URL}/oauth/start")
 
-        headers = {
-            "WWW-Authenticate": (
-                f'Bearer realm="{BASE_URL}/mcp", '
-                f'authorization_uri="{BASE_URL}/oauth/authorize", '
-                f'token_uri="{BASE_URL}/oauth/token", '
-                f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource"'
-            )
-        }
+    session_id = _validate_bearer(request)
+    if not session_id:
         return JSONResponse(
             {
+                "error": "unauthorized",
                 "name": "hellenic-google-ads-mcp",
                 "mcp": f"{BASE_URL}/mcp",
-                "authentication": "required",
                 "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
                 "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
-                "hint": "Use OAuth discovery/authorize flow, then POST /mcp with Authorization: Bearer <token>.",
             },
-            status_code=200,
-            headers=headers,
+            status_code=401,
+            headers=_oauth_www_authenticate_header(),
         )
+
+    if "text/event-stream" not in accept:
+        return JSONResponse({"ok": True, "authenticated": True, "transport": "sse"}, status_code=200)
 
     async with sse_transport.connect_sse(
         request.scope, request.receive, request._send
@@ -449,6 +466,18 @@ async def mcp_http_options():
     return Response(status_code=204)
 
 
+# Legacy SSE aliases used by some MCP clients
+@app.get("/sse")
+@app.head("/sse")
+async def sse_alias(request: Request):
+    return await mcp_sse(request)
+
+
+@app.options("/sse")
+async def sse_options():
+    return Response(status_code=204)
+
+
 @app.post("/mcp")
 async def mcp_http(request: Request):
     """MCP endpoint via Streamable HTTP (JSON-RPC) with mandatory bearer auth."""
@@ -458,15 +487,7 @@ async def mcp_http(request: Request):
         bearer_token = auth_header.split(" ", 1)[1].strip()
 
     def _unauthorized(msg: str):
-        headers = {
-            "WWW-Authenticate": (
-                f'Bearer realm="{BASE_URL}/mcp", '
-                f'authorization_uri="{BASE_URL}/oauth/authorize", '
-                f'token_uri="{BASE_URL}/oauth/token", '
-                f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource"'
-            )
-        }
-        return JSONResponse(_rpc_err(-32001, msg), status_code=401, headers=headers)
+        return JSONResponse(_rpc_err(-32001, msg), status_code=401, headers=_oauth_www_authenticate_header())
 
     if not bearer_token:
         return _unauthorized("Missing bearer token")
