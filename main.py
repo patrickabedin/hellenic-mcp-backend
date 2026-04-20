@@ -352,12 +352,10 @@ async def oauth_callback(code: str, state: str):
 
     except Exception as e:
         msg = str(e)
-        # Surface actionable PKCE mismatch guidance for connector users.
-        if "Missing code verifier" in msg:
-            raise HTTPException(
-                status_code=400,
-                detail="(invalid_grant) Missing code verifier for Google leg. Server patched to disable Google-PKCE; retry OAuth flow with fresh authorize request.",
-            )
+        # Self-heal stale sessions: if PKCE verifier is missing (old state),
+        # redirect the user to a fresh OAuth start instead of dead-ending.
+        if "Missing code verifier" in msg or "invalid_grant" in msg.lower():
+            return RedirectResponse(url=f"{BASE_URL}/oauth/start")
         raise HTTPException(status_code=400, detail=msg)
 
 
