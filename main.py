@@ -1,7 +1,7 @@
 """Main FastAPI application for Hellenic Google Ads MCP Server."""
 import os
 import secrets
-from typing import Optional
+from typing import Optional, Any, Dict
 from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +12,7 @@ import uvicorn
 
 import db
 import auth
-from mcp_server import mcp_server
+from mcp_server import mcp_server, TOOLS, call_tool as mcp_call_tool
 
 # Load environment variables
 load_dotenv()
@@ -243,36 +243,117 @@ async def mcp_messages(request: Request):
         request.scope, request.receive, request._send
     )
 
+def _rpc_ok(result: Any, req_id: Any) -> Dict[str, Any]:
+    return {"jsonrpc": "2.0", "id": req_id, "result": result}
+
+
+def _rpc_err(code: int, message: str, req_id: Any = None) -> Dict[str, Any]:
+    return {
+        "jsonrpc": "2.0",
+        "id": req_id,
+        "error": {
+            "code": code,
+            "message": message
+        }
+    }
+
+
+@app.options("/mcp")
+async def mcp_http_options():
+    """CORS/preflight support for streamable HTTP clients."""
+    return Response(status_code=204)
+
+
 @app.post("/mcp")
 async def mcp_http(request: Request):
-    """MCP endpoint via HTTP POST."""
+    """MCP endpoint via Streamable HTTP (JSON-RPC)."""
     try:
-        # Get session ID from header or body
-        session_id = request.headers.get("X-Session-ID")
-        
         body = await request.json()
-        if not session_id and "session_id" in body:
-            session_id = body["session_id"]
-        
-        # Process MCP request
-        # This would need full HTTP transport implementation
-        # For now, return basic response directing to SSE
-        return JSONResponse({
-            "jsonrpc": "2.0",
-            "id": body.get("id"),
-            "result": {
-                "message": "Please use SSE transport at GET /mcp"
-            }
-        })
-    
-    except Exception as e:
-        return JSONResponse({
-            "jsonrpc": "2.0",
-            "error": {
-                "code": -32603,
-                "message": str(e)
-            }
-        }, status_code=500)
+    except Exception:
+        return JSONResponse(_rpc_err(-32700, "Parse error"), status_code=400)
+
+    # Support both single and batch JSON-RPC payloads
+    is_batch = isinstance(body, list)
+    calls = body if is_batch else [body]
+    responses: list[Dict[str, Any]] = []
+
+    for call in calls:
+        if not isinstance(call, dict):
+            responses.append(_rpc_err(-32600, "Invalid Request"))
+            continue
+
+        method = call.get("method")
+        req_id = call.get("id")
+        params = call.get("params") or {}
+
+        # Notifications do not require responses
+        is_notification = req_id is None
+
+        try:
+            if method == "initialize":
+                result = {
+                    "protocolVersion": params.get("protocolVersion", "2024-11-05"),
+                    "capabilities": {
+                        "tools": {
+                            "listChanged": False
+                        }
+                    },
+                    "serverInfo": {
+                        "name": "hellenic-google-ads-mcp",
+                        "version": "1.0.0"
+                    }
+                }
+                if not is_notification:
+                    responses.append(_rpc_ok(result, req_id))
+
+            elif method in ("notifications/initialized", "initialized"):
+                # Client lifecycle notification
+                if not is_notification:
+                    responses.append(_rpc_ok({}, req_id))
+
+            elif method == "tools/list":
+                tools = []
+                for t in TOOLS:
+                    tools.append({
+                        "name": t.name,
+                        "description": t.description,
+                        "inputSchema": t.inputSchema,
+                    })
+                if not is_notification:
+                    responses.append(_rpc_ok({"tools": tools}, req_id))
+
+            elif method == "tools/call":
+                name = params.get("name")
+                arguments = params.get("arguments") or {}
+                if not name:
+                    if not is_notification:
+                        responses.append(_rpc_err(-32602, "Missing tool name", req_id))
+                    continue
+
+                result_content = await mcp_call_tool(name, arguments)
+                content = []
+                for item in result_content:
+                    content.append({
+                        "type": getattr(item, "type", "text"),
+                        "text": getattr(item, "text", str(item))
+                    })
+                if not is_notification:
+                    responses.append(_rpc_ok({"content": content, "isError": False}, req_id))
+
+            else:
+                if not is_notification:
+                    responses.append(_rpc_err(-32601, f"Method not found: {method}", req_id))
+
+        except Exception as e:
+            if not is_notification:
+                responses.append(_rpc_err(-32603, str(e), req_id))
+
+    if not responses:
+        return Response(status_code=204)
+
+    if is_batch:
+        return JSONResponse(responses)
+    return JSONResponse(responses[0])
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8090))
