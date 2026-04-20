@@ -413,7 +413,26 @@ async def mcp_sse(request: Request):
         return RedirectResponse(url=f"{BASE_URL}/oauth/start")
 
     session_id = _validate_bearer(request)
-    if not session_id:
+
+    # Connector probe compatibility: return 200 metadata for unauthenticated
+    # GET/HEAD requests, but still include OAuth challenge header.
+    if not session_id and "text/event-stream" not in accept:
+        headers = _oauth_www_authenticate_header()
+        headers["X-MCP-Auth-Required"] = "true"
+        return JSONResponse(
+            {
+                "name": "hellenic-google-ads-mcp",
+                "mcp": f"{BASE_URL}/mcp",
+                "authentication": "required",
+                "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
+                "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
+                "hint": "Complete OAuth authorize/token flow, then call with Bearer token.",
+            },
+            status_code=200,
+            headers=headers,
+        )
+
+    if not session_id and "text/event-stream" in accept:
         return JSONResponse(
             {
                 "error": "unauthorized",
