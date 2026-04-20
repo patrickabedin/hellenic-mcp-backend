@@ -2,8 +2,10 @@
 import os
 import hashlib
 import base64
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional
+from urllib.parse import urlencode
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
@@ -49,26 +51,41 @@ def get_oauth_flow() -> Flow:
 
 
 def get_auth_url(session_id: str) -> str:
-    """Generate OAuth2 authorization URL.
+    """Generate Google OAuth URL with persisted PKCE verifier bound to state."""
+    client_id = os.getenv("GOOGLE_ADS_CLIENT_ID")
+    redirect_uri = os.getenv("GOOGLE_ADS_REDIRECT_URI")
+    if not client_id or not redirect_uri:
+        raise RuntimeError("Missing GOOGLE_ADS_CLIENT_ID or GOOGLE_ADS_REDIRECT_URI")
 
-    IMPORTANT: keep Google leg stateless (no PKCE verifier persistence required).
-    Connector PKCE is handled by our own /oauth/authorize + /oauth/token broker.
-    """
-    flow = get_oauth_flow()
-    auth_url, _ = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="true",
-        state=session_id,
-        prompt="consent",  # Force consent screen to get refresh token
-        autogenerate_code_verifier=False,
-    )
-    return auth_url
+    code_verifier = secrets.token_urlsafe(64)
+    code_challenge = _b64url_sha256(code_verifier)
+    db.store_google_pkce_state(session_id, code_verifier)
+
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": " ".join(SCOPES),
+        "access_type": "offline",
+        "include_granted_scopes": "true",
+        "state": session_id,
+        "prompt": "consent",
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
+    }
+    return f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
 
 
 def exchange_code(code: str, session_id: str) -> dict:
     """Exchange authorization code for Google tokens and store by session_id."""
     flow = get_oauth_flow()
-    flow.fetch_token(code=code)
+
+    code_verifier = db.get_google_pkce_state(session_id)
+    if not code_verifier:
+        raise RuntimeError("(invalid_grant) Missing code verifier for Google leg. Start a fresh OAuth flow.")
+
+    flow.fetch_token(code=code, code_verifier=code_verifier)
+    db.delete_google_pkce_state(session_id)
 
     credentials = flow.credentials
 

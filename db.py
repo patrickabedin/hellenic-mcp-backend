@@ -80,6 +80,17 @@ def init_db():
             """
         )
 
+        # PKCE verifier store for Google OAuth leg (state -> verifier)
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS google_pkce_states (
+                state TEXT PRIMARY KEY,
+                code_verifier TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
         conn.commit()
 
 
@@ -290,3 +301,29 @@ def get_connector_token(access_token: str) -> Optional[Dict[str, Any]]:
             "SELECT * FROM connector_tokens WHERE access_token = ?", (access_token,)
         ).fetchone()
         return dict(row) if row else None
+
+
+def store_google_pkce_state(state: str, code_verifier: str):
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO google_pkce_states (state, code_verifier, created_at)
+            VALUES (?, ?, ?)
+            """,
+            (state, code_verifier, _utcnow_iso()),
+        )
+        conn.commit()
+
+
+def get_google_pkce_state(state: str) -> Optional[str]:
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT code_verifier FROM google_pkce_states WHERE state = ?", (state,)
+        ).fetchone()
+        return row["code_verifier"] if row else None
+
+
+def delete_google_pkce_state(state: str):
+    with get_db() as conn:
+        conn.execute("DELETE FROM google_pkce_states WHERE state = ?", (state,))
+        conn.commit()
