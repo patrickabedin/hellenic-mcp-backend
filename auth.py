@@ -49,13 +49,18 @@ def get_oauth_flow() -> Flow:
 
 
 def get_auth_url(session_id: str) -> str:
-    """Generate OAuth2 authorization URL."""
+    """Generate OAuth2 authorization URL.
+
+    IMPORTANT: keep Google leg stateless (no PKCE verifier persistence required).
+    Connector PKCE is handled by our own /oauth/authorize + /oauth/token broker.
+    """
     flow = get_oauth_flow()
     auth_url, _ = flow.authorization_url(
         access_type="offline",
         include_granted_scopes="true",
         state=session_id,
         prompt="consent",  # Force consent screen to get refresh token
+        autogenerate_code_verifier=False,
     )
     return auth_url
 

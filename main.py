@@ -29,7 +29,7 @@ db.init_db()
 app = FastAPI(
     title="Hellenic Google Ads MCP Server",
     description="Multi-tenant MCP server for Google Ads API access",
-    version="1.0.0"
+    version="1.0.1"
 )
 
 # CORS middleware
@@ -302,7 +302,14 @@ async def oauth_callback(code: str, state: str):
         return RedirectResponse(url=redirect_target)
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        msg = str(e)
+        # Surface actionable PKCE mismatch guidance for connector users.
+        if "Missing code verifier" in msg:
+            raise HTTPException(
+                status_code=400,
+                detail="(invalid_grant) Missing code verifier for Google leg. Server patched to disable Google-PKCE; retry OAuth flow with fresh authorize request.",
+            )
+        raise HTTPException(status_code=400, detail=msg)
 
 
 @app.post("/oauth/token")
