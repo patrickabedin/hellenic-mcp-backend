@@ -401,11 +401,12 @@ def _validate_bearer(request: Request) -> Optional[str]:
 @app.get("/mcp")
 @app.head("/mcp")
 async def mcp_sse(request: Request):
-    """MCP endpoint via SSE with strict OAuth challenge behavior for compatibility.
+    """Primary MCP endpoint (Claude-focused behavior).
 
     - HTML browsers: redirect to OAuth start
-    - Non-HTML probes without auth: 401 + WWW-Authenticate (triggers client OAuth)
-    - text/event-stream + valid bearer: open SSE stream
+    - Any unauthenticated probe: 401 + WWW-Authenticate (strict challenge)
+    - Authenticated non-SSE probe: 200 status JSON
+    - Authenticated SSE accept: opens stream
     """
     accept = (request.headers.get("accept") or "").lower()
 
@@ -413,26 +414,7 @@ async def mcp_sse(request: Request):
         return RedirectResponse(url=f"{BASE_URL}/oauth/start")
 
     session_id = _validate_bearer(request)
-
-    # Connector probe compatibility: return 200 metadata for unauthenticated
-    # GET/HEAD requests, but still include OAuth challenge header.
-    if not session_id and "text/event-stream" not in accept:
-        headers = _oauth_www_authenticate_header()
-        headers["X-MCP-Auth-Required"] = "true"
-        return JSONResponse(
-            {
-                "name": "hellenic-google-ads-mcp",
-                "mcp": f"{BASE_URL}/mcp",
-                "authentication": "required",
-                "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
-                "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
-                "hint": "Complete OAuth authorize/token flow, then call with Bearer token.",
-            },
-            status_code=200,
-            headers=headers,
-        )
-
-    if not session_id and "text/event-stream" in accept:
+    if not session_id:
         return JSONResponse(
             {
                 "error": "unauthorized",
@@ -489,6 +471,29 @@ async def mcp_http_options():
 @app.get("/sse")
 @app.head("/sse")
 async def sse_alias(request: Request):
+    """Compatibility alias for UIs with brittle connection tests.
+
+    Returns probe-friendly 200 metadata when unauthenticated (with OAuth hint),
+    but still delegates authenticated/SSE flows to /mcp logic.
+    """
+    accept = (request.headers.get("accept") or "").lower()
+    session_id = _validate_bearer(request)
+
+    if not session_id and "text/event-stream" not in accept:
+        headers = _oauth_www_authenticate_header()
+        headers["X-MCP-Auth-Required"] = "true"
+        return JSONResponse(
+            {
+                "name": "hellenic-google-ads-mcp",
+                "mcp": f"{BASE_URL}/mcp",
+                "authentication": "required",
+                "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
+                "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
+            },
+            status_code=200,
+            headers=headers,
+        )
+
     return await mcp_sse(request)
 
 
