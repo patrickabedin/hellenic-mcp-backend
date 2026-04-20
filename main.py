@@ -156,6 +156,7 @@ async def root():
     return HTMLResponse(content=html)
 
 @app.get("/health")
+@app.head("/health")
 async def health_check():
     """Health check endpoint."""
     return {
@@ -165,6 +166,7 @@ async def health_check():
     }
 
 @app.get("/.well-known/oauth-authorization-server")
+@app.head("/.well-known/oauth-authorization-server")
 async def oauth_discovery():
     """OAuth 2.0 Authorization Server Metadata for AI connector discovery."""
     return {
@@ -180,6 +182,7 @@ async def oauth_discovery():
 
 
 @app.get("/.well-known/oauth-protected-resource")
+@app.head("/.well-known/oauth-protected-resource")
 async def oauth_protected_resource():
     """Resource metadata so clients can discover auth requirements for /mcp."""
     return {
@@ -365,6 +368,7 @@ async def oauth_token(request: Request):
 sse_transport = SseServerTransport("/messages")
 
 @app.get("/mcp")
+@app.head("/mcp")
 async def mcp_sse(request: Request):
     """MCP endpoint via Server-Sent Events (SSE).
 
