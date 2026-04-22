@@ -95,6 +95,76 @@ async def list_accounts(session_id: str) -> List[Dict[str, Any]]:
     except Exception as e:
         return {"error": str(e)}
 
+async def list_mcc_child_accounts(session_id: str, manager_customer_id: str) -> List[Dict[str, Any]]:
+    """List all child accounts under a Manager/MCC account.
+    
+    This queries the Google Ads API using the MCC as login-customer-id
+    to discover all accessible child accounts in the hierarchy.
+    """
+    try:
+        client = get_google_ads_client(session_id)
+        
+        # Use CustomerService with login-customer-id set to the MCC
+        # This allows querying child accounts under the manager
+        customer_service = client.get_service("CustomerService")
+        
+        # Set login-customer-id to the MCC for this request
+        # This is the key to accessing child accounts
+        from google.ads.googleads.client import GoogleAdsClient
+        credentials = auth.get_credentials(session_id)
+        
+        # Create client with login-customer-id set to MCC
+        mcc_client = GoogleAdsClient(
+            credentials=credentials,
+            developer_token=os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN"),
+            use_proto_plus=True,
+            login_customer_id=manager_customer_id
+        )
+        
+        # List accessible customers under this MCC
+        mcc_customer_service = mcc_client.get_service("CustomerService")
+        accessible_customers = mcc_customer_service.list_accessible_customers()
+        
+        child_accounts = []
+        for resource_name in accessible_customers.resource_names:
+            customer_id = resource_name.split('/')[-1]
+            # Skip the MCC itself
+            if customer_id == manager_customer_id:
+                continue
+                
+            try:
+                ga_service = mcc_client.get_service("GoogleAdsService")
+                query = """
+                    SELECT
+                        customer.id,
+                        customer.descriptive_name,
+                        customer.currency_code,
+                        customer.time_zone,
+                        customer.status,
+                        customer.manager
+                    FROM customer
+                    LIMIT 1
+                """
+                response = ga_service.search(customer_id=customer_id, query=query)
+                
+                for row in response:
+                    child_accounts.append({
+                        "customer_id": str(row.customer.id),
+                        "name": row.customer.descriptive_name,
+                        "currency": row.customer.currency_code,
+                        "timezone": row.customer.time_zone,
+                        "status": row.customer.status.name,
+                        "is_manager": row.customer.manager
+                    })
+            except GoogleAdsException:
+                # Skip accounts we can't access
+                continue
+        
+        return child_accounts
+    except Exception as e:
+        return {"error": str(e)}
+
+
 async def get_account_summary(
     session_id: str,
     customer_id: str,

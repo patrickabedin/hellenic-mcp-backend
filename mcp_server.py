@@ -47,6 +47,18 @@ TOOLS = [
         }
     ),
     Tool(
+        name="list_mcc_child_accounts",
+        description="List all child accounts under a Manager/MCC (Multi-Client Center) account. Use this when list_accounts only shows the MCC itself and you need to access its child accounts (e.g., Randstad, Omron, Titan Office).",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "session_id": {"type": "string"},
+                "manager_customer_id": {"type": "string", "description": "The MCC/Manager account customer ID (e.g., 3568564840 for Hellenic Technologies)"}
+            },
+            "required": ["session_id", "manager_customer_id"]
+        }
+    ),
+    Tool(
         name="get_account_summary",
         description="Get summary metrics (spend, impressions, clicks, conversions) for an account over a date range.",
         inputSchema={
@@ -471,6 +483,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
             "connect_google_ads": tools.connect_google_ads,
             "list_accessible_customers": tools.list_accessible_customers,
             "list_accounts": tools.list_accounts,
+            "list_mcc_child_accounts": tools.list_mcc_child_accounts,
             "get_account_summary": tools.get_account_summary,
             "get_account_budget": tools.get_account_budget,
             "get_billing_summary": tools.get_billing_summary,

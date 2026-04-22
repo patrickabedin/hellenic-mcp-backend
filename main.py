@@ -353,45 +353,152 @@ async def oauth_callback(code: str, state: str):
             
             # Pure legacy flow: state is just session_id
             result = auth.exchange_code(code, state)
-            html = f"""
+            html = """
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Authorization Complete</title>
+                <title>Authorization Complete — Hellenic Google Ads MCP</title>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
-                    body {{
-                        font-family: system-ui, -apple-system, sans-serif;
-                        max-width: 600px;
-                        margin: 100px auto;
-                        padding: 40px;
-                        text-align: center;
-                        background: #f8f9fa;
-                    }}
-                    .success {{
-                        background: #d4edda;
-                        color: #155724;
+                    * { box-sizing: border-box; margin: 0; padding: 0; }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
                         padding: 20px;
-                        border-radius: 8px;
-                        margin: 20px 0;
-                    }}
-                    code {{
-                        background: #fff;
-                        padding: 5px 10px;
-                        border-radius: 3px;
-                        font-size: 0.9em;
+                    }
+                    .card {
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        max-width: 500px;
+                        width: 100%;
+                        padding: 48px 40px;
+                        text-align: center;
+                    }
+                    .icon {
+                        width: 80px;
+                        height: 80px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 24px;
+                        font-size: 40px;
+                    }
+                    h1 {
+                        font-size: 28px;
+                        color: #1a202c;
+                        margin-bottom: 12px;
+                    }
+                    .subtitle {
+                        color: #718096;
+                        font-size: 16px;
+                        margin-bottom: 32px;
+                    }
+                    .steps {
+                        text-align: left;
+                        background: #f7fafc;
+                        border-radius: 12px;
+                        padding: 24px;
+                        margin-bottom: 24px;
+                    }
+                    .steps h3 {
+                        font-size: 14px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        color: #4a5568;
+                        margin-bottom: 16px;
+                    }
+                    .step {
+                        display: flex;
+                        align-items: flex-start;
+                        margin-bottom: 16px;
+                    }
+                    .step:last-child { margin-bottom: 0; }
+                    .step-number {
+                        width: 28px;
+                        height: 28px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        font-weight: 600;
+                        margin-right: 12px;
+                        flex-shrink: 0;
+                    }
+                    .step-text {
+                        color: #4a5568;
+                        font-size: 15px;
+                        line-height: 1.5;
+                        padding-top: 2px;
+                    }
+                    .close-btn {
                         display: inline-block;
-                        margin: 10px 0;
-                    }}
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 14px 32px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        font-size: 16px;
+                        border: none;
+                        cursor: pointer;
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }
+                    .close-btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    }
+                    .footer {
+                        margin-top: 24px;
+                        color: #a0aec0;
+                        font-size: 13px;
+                    }
                 </style>
             </head>
             <body>
-                <h1>✅ Authorization Complete!</h1>
-                <div class="success">
-                    <p>Your Google Ads account has been successfully connected.</p>
-                    <p>Your session ID: <code>{state}</code></p>
+                <div class="card">
+                    <div class="icon">✅</div>
+                    <h1>Authorization Complete!</h1>
+                    <p class="subtitle">Your Google Ads account is now connected to Claude.</p>
+                    
+                    <div class="steps">
+                        <h3>What to do next</h3>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-text">Close this browser window or tab.</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-text">Return to Claude — your session is now active.</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-text">Start using Google Ads tools: list accounts, campaigns, keywords, and more.</div>
+                        </div>
+                    </div>
+                    
+                    <button class="close-btn" onclick="window.close()">Close Window</button>
+                    
+                    <p class="footer">Hellenic Technologies Google Ads MCP Connector</p>
                 </div>
-                <p>You can now close this window and return to your MCP client.</p>
-                <p>Use your session ID in all subsequent tool calls.</p>
+                <script>
+                    // Auto-close after 10 seconds if window was opened by a script
+                    setTimeout(function() {
+                        if (window.opener) {
+                            window.close();
+                        }
+                    }, 10000);
+                </script>
             </body>
             </html>
             """
