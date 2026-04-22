@@ -14,10 +14,10 @@ from contextlib import contextmanager
 DATABASE_URL = os.getenv("DATABASE_URL")
 DB_PATH = os.getenv("DB_PATH", "sessions.db")
 
-# PostgreSQL support
+# PostgreSQL support (pure Python driver for Render compatibility)
 try:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
+    import pg8000
+    from pg8000.dbapi import Connection
     HAS_POSTGRES = True
 except ImportError:
     HAS_POSTGRES = False
@@ -35,8 +35,17 @@ def _iso_after(minutes: int = 0, days: int = 0) -> str:
 def get_db():
     """Context manager for database connections."""
     if DATABASE_URL and HAS_POSTGRES:
-        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-        conn.cursor_factory = RealDictCursor
+        # pg8000 supports standard PostgreSQL connection strings
+        import urllib.parse
+        parsed = urllib.parse.urlparse(DATABASE_URL)
+        conn = pg8000.dbapi.connect(
+            host=parsed.hostname,
+            port=parsed.port or 5432,
+            database=parsed.path[1:] if parsed.path else None,
+            user=parsed.username,
+            password=parsed.password,
+            ssl=True
+        )
         try:
             yield conn
         finally:
