@@ -647,12 +647,21 @@ async def mcp_http(request: Request):
         return _unauthorized("Missing bearer token")
 
     session_from_bearer = None
-    token_row = db.get_connector_token(bearer_token)
-    if not token_row:
-        return _unauthorized("Invalid bearer token")
-    if datetime.fromisoformat(token_row["expires_at"]) < datetime.utcnow():
-        return _unauthorized("Expired bearer token")
-    session_from_bearer = token_row["session_id"]
+    
+    # Try stateless signed token first (survives DB wipes)
+    token_payload = auth.verify_auth_code(bearer_token)
+    if token_payload:
+        if token_payload.get("exp") and token_payload["exp"] < datetime.utcnow().timestamp():
+            return _unauthorized("Expired bearer token")
+        session_from_bearer = token_payload.get("session_id")
+    else:
+        # Fallback: DB lookup for legacy tokens
+        token_row = db.get_connector_token(bearer_token)
+        if not token_row:
+            return _unauthorized("Invalid bearer token")
+        if datetime.fromisoformat(token_row["expires_at"]) < datetime.utcnow():
+            return _unauthorized("Expired bearer token")
+        session_from_bearer = token_row["session_id"]
 
     try:
         body = await request.json()
