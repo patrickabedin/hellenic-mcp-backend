@@ -626,10 +626,23 @@ async def sse_alias(request: Request):
     accept = (request.headers.get("accept") or "").lower()
     session_id = _validate_bearer(request)
 
-    if not session_id and "text/event-stream" not in accept:
+    if not session_id:
+        if "text/event-stream" in accept:
+            # SSE request without auth — still need to challenge
+            return JSONResponse(
+                {"error": "invalid_token", "error_description": "Authentication required"},
+                status_code=401,
+                headers=_oauth_www_authenticate_header(),
+            )
+        # Probe-friendly JSON response for non-SSE requests
         return JSONResponse(
-            {"error": "invalid_token", "error_description": "Authentication required"},
-            status_code=401,
+            {
+                "ok": True,
+                "transport": "sse",
+                "authenticated": False,
+                "note": "Use OAuth 2.1 flow to authenticate"
+            },
+            status_code=200,
             headers=_oauth_www_authenticate_header(),
         )
 
