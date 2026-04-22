@@ -322,14 +322,15 @@ async def oauth_callback(code: str, state: str):
                 # Exchange Google code
                 auth.exchange_code(code, session_id)
                 
-                # Issue our own OAuth code
-                request_id = secrets.token_urlsafe(24)
-                local_code = db.issue_oauth_code(
-                    request_id=request_id,
-                    session_id=session_id,
-                    client_id=state_payload.get("client_id"),
-                    redirect_uri=redirect_uri,
-                )
+                # Issue signed auth code (stateless — survives DB wipes)
+                code_payload = {
+                    "session_id": session_id,
+                    "client_id": state_payload.get("client_id"),
+                    "redirect_uri": redirect_uri,
+                    "code_challenge": code_challenge,
+                    "exp": int((datetime.utcnow() + timedelta(minutes=10)).timestamp()),
+                }
+                local_code = auth.sign_auth_code(code_payload)
                 
                 # Redirect back to connector
                 params = {"code": local_code}
@@ -388,12 +389,16 @@ async def oauth_callback(code: str, state: str):
         session_id = auth_req["session_id"]
         auth.exchange_code(code, session_id)
         db.mark_auth_request_completed(auth_req["request_id"])
-        local_code = db.issue_oauth_code(
-            request_id=auth_req["request_id"],
-            session_id=session_id,
-            client_id=auth_req.get("client_id"),
-            redirect_uri=auth_req["redirect_uri"],
-        )
+        
+        # Issue signed auth code (stateless — survives DB wipes)
+        code_payload = {
+            "session_id": session_id,
+            "client_id": auth_req.get("client_id"),
+            "redirect_uri": auth_req["redirect_uri"],
+            "code_challenge": auth_req["code_challenge"],
+            "exp": int((datetime.utcnow() + timedelta(minutes=10)).timestamp()),
+        }
+        local_code = auth.sign_auth_code(code_payload)
 
         params = {"code": local_code}
         if auth_req.get("state"):
@@ -430,6 +435,38 @@ async def oauth_token(request: Request):
     if not code or not code_verifier or not redirect_uri:
         return JSONResponse({"error": "invalid_request"}, status_code=400)
 
+    # Try stateless signed code first (survives DB wipes)
+    code_payload = auth.verify_auth_code(code)
+    
+    if code_payload:
+        # Stateless verification
+        if code_payload.get("exp") and code_payload["exp"] < datetime.utcnow().timestamp():
+            return JSONResponse({"error": "invalid_grant"}, status_code=400)
+        if redirect_uri != code_payload.get("redirect_uri"):
+            return JSONResponse({"error": "invalid_grant"}, status_code=400)
+        if not auth.verify_pkce(
+            code_verifier=code_verifier,
+            code_challenge=code_payload.get("code_challenge", ""),
+            method="S256",
+        ):
+            return JSONResponse({"error": "invalid_grant"}, status_code=400)
+        
+        session_id = code_payload["session_id"]
+        token_payload = {
+            "session_id": session_id,
+            "client_id": code_payload.get("client_id"),
+            "exp": int((datetime.utcnow() + timedelta(days=30)).timestamp()),
+        }
+        access_token = auth.sign_auth_code(token_payload)
+        
+        return {
+            "access_token": access_token,
+            "token_type": "Bearer",
+            "expires_in": 2592000,
+            "scope": "google_ads",
+        }
+
+    # Fallback: DB lookup for legacy codes
     code_row = db.get_oauth_code(code)
     if not code_row:
         return JSONResponse({"error": "invalid_grant"}, status_code=400)
@@ -444,7 +481,6 @@ async def oauth_token(request: Request):
     if not auth_req:
         return JSONResponse({"error": "invalid_grant"}, status_code=400)
 
-    # Optional client_id match if one exists in stored auth request
     if auth_req.get("client_id") and client_id and auth_req["client_id"] != client_id:
         return JSONResponse({"error": "invalid_grant"}, status_code=400)
 
@@ -456,15 +492,19 @@ async def oauth_token(request: Request):
         return JSONResponse({"error": "invalid_grant"}, status_code=400)
 
     db.mark_oauth_code_used(code)
-    token = db.issue_connector_token(
-        session_id=code_row["session_id"],
-        client_id=auth_req.get("client_id"),
-    )
+    
+    # Issue signed token (stateless)
+    token_payload = {
+        "session_id": code_row["session_id"],
+        "client_id": auth_req.get("client_id"),
+        "exp": int((datetime.utcnow() + timedelta(days=30)).timestamp()),
+    }
+    access_token = auth.sign_auth_code(token_payload)
 
     return {
-        "access_token": token["access_token"],
-        "token_type": token["token_type"],
-        "expires_in": token["expires_in"],
+        "access_token": access_token,
+        "token_type": "Bearer",
+        "expires_in": 2592000,
         "scope": "google_ads",
     }
 
@@ -482,6 +522,15 @@ def _validate_bearer(request: Request) -> Optional[str]:
     if not auth_header.lower().startswith("bearer "):
         return None
     token = auth_header.split(" ", 1)[1].strip()
+    
+    # Try stateless signed token first (survives DB wipes)
+    token_payload = auth.verify_auth_code(token)
+    if token_payload:
+        if token_payload.get("exp") and token_payload["exp"] < datetime.utcnow().timestamp():
+            return None
+        return token_payload.get("session_id")
+    
+    # Fallback: DB lookup for legacy tokens
     row = db.get_connector_token(token)
     if not row:
         return None

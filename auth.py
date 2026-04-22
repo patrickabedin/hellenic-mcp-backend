@@ -53,6 +53,35 @@ def _verify_state(state: str) -> Optional[dict]:
         return None
 
 
+def sign_auth_code(payload: dict) -> str:
+    """Sign an auth code payload as a compact JWT-like token."""
+    data = base64.urlsafe_b64encode(json.dumps(payload, sort_keys=True).encode()).decode().rstrip("=")
+    sig = base64.urlsafe_b64encode(
+        hmac.new(STATE_SECRET.encode(), data.encode(), hashlib.sha256).digest()
+    ).decode().rstrip("=")
+    return f"{data}.{sig}"
+
+
+def verify_auth_code(code: str) -> Optional[dict]:
+    """Verify and decode a signed auth code."""
+    try:
+        parts = code.split(".")
+        if len(parts) != 2:
+            return None
+        data, sig = parts
+        expected_sig = base64.urlsafe_b64encode(
+            hmac.new(STATE_SECRET.encode(), data.encode(), hashlib.sha256).digest()
+        ).decode().rstrip("=")
+        if not hmac.compare_digest(sig, expected_sig):
+            return None
+        payload = json.loads(base64.urlsafe_b64decode(data + "==").decode())
+        if payload.get("exp") and payload["exp"] < datetime.utcnow().timestamp():
+            return None
+        return payload
+    except Exception:
+        return None
+
+
 def _b64url_sha256(value: str) -> str:
     digest = hashlib.sha256(value.encode("utf-8")).digest()
     return base64.urlsafe_b64encode(digest).decode("utf-8").rstrip("=")
