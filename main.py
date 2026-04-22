@@ -269,25 +269,76 @@ async def oauth_authorize(
     if not code_challenge or code_challenge_method != "S256":
         raise HTTPException(status_code=400, detail="PKCE S256 is required")
 
-    auth_req = db.create_auth_request(
-        client_id=client_id,
-        redirect_uri=redirect_uri,
-        state=state,
-        code_challenge=code_challenge,
-        code_challenge_method=code_challenge_method,
-    )
+    # Build signed state token containing all callback context
+    # This makes the flow stateless and resilient to DB wipes
+    session_id = secrets.token_urlsafe(24)
+    code_verifier = secrets.token_urlsafe(64)
+    state_payload = {
+        "session_id": session_id,
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "state": state,
+        "code_challenge": code_challenge,
+        "code_verifier": code_verifier,
+        "exp": int((datetime.utcnow() + timedelta(minutes=10)).timestamp()),
+    }
+    signed_state = auth._sign_state(state_payload)
+    
+    # Also store in DB for fallback (best effort)
+    try:
+        db.create_auth_request(
+            client_id=client_id,
+            redirect_uri=redirect_uri,
+            state=state,
+            code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method,
+        )
+        db.store_google_pkce_state(session_id, code_verifier)
+    except Exception:
+        pass
 
-    google_auth_url = auth.get_auth_url(auth_req["google_state"])
+    google_auth_url = auth.get_auth_url_for_connector(signed_state, code_verifier)
     return RedirectResponse(url=google_auth_url)
 
 @app.get("/oauth/callback")
 async def oauth_callback(code: str, state: str):
     """Google OAuth callback. Supports both legacy and brokered connector flow."""
     try:
+        # Try database lookup first
         auth_req = db.get_auth_request_by_google_state(state)
 
         # Legacy direct flow: state is session_id
         if not auth_req:
+            # Try to decode signed state token (stateless fallback)
+            state_payload = auth._verify_state(state)
+            
+            if state_payload:
+                # Stateless connector flow: decode state from token
+                session_id = state_payload["session_id"]
+                redirect_uri = state_payload["redirect_uri"]
+                connector_state = state_payload.get("state")
+                code_challenge = state_payload.get("code_challenge", "")
+                
+                # Exchange Google code
+                auth.exchange_code(code, session_id)
+                
+                # Issue our own OAuth code
+                request_id = secrets.token_urlsafe(24)
+                local_code = db.issue_oauth_code(
+                    request_id=request_id,
+                    session_id=session_id,
+                    client_id=state_payload.get("client_id"),
+                    redirect_uri=redirect_uri,
+                )
+                
+                # Redirect back to connector
+                params = {"code": local_code}
+                if connector_state:
+                    params["state"] = connector_state
+                redirect_target = f"{redirect_uri}?{urlencode(params)}"
+                return RedirectResponse(url=redirect_target)
+            
+            # Pure legacy flow: state is just session_id
             result = auth.exchange_code(code, state)
             html = f"""
             <!DOCTYPE html>
@@ -333,7 +384,7 @@ async def oauth_callback(code: str, state: str):
             """
             return HTMLResponse(content=html)
 
-        # Brokered connector flow
+        # Brokered connector flow (DB lookup succeeded)
         session_id = auth_req["session_id"]
         auth.exchange_code(code, session_id)
         db.mark_auth_request_completed(auth_req["request_id"])
@@ -352,8 +403,7 @@ async def oauth_callback(code: str, state: str):
 
     except Exception as e:
         msg = str(e)
-        # Self-heal stale sessions: if PKCE verifier is missing (old state),
-        # redirect the user to a fresh OAuth start instead of dead-ending.
+        # Self-heal stale sessions
         if "Missing code verifier" in msg or "invalid_grant" in msg.lower():
             return RedirectResponse(url=f"{BASE_URL}/oauth/start")
         raise HTTPException(status_code=400, detail=msg)
