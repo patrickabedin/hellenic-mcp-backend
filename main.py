@@ -223,7 +223,7 @@ async def oauth_register(request: Request):
 async def oauth_protected_resource():
     """RFC 9728 resource metadata (origin-level)."""
     return {
-        "resource": f"{BASE_URL}/mcp",
+        "resource": BASE_URL,
         "authorization_servers": [OAUTH_ISSUER],
         "bearer_methods_supported": ["header"],
         "scopes_supported": ["google_ads"],
@@ -235,7 +235,7 @@ async def oauth_protected_resource():
 async def oauth_protected_resource_mcp():
     """RFC 9728 resource metadata (resource-specific path), used by some clients."""
     return {
-        "resource": f"{BASE_URL}/mcp",
+        "resource": BASE_URL,
         "authorization_servers": [OAUTH_ISSUER],
         "bearer_methods_supported": ["header"],
         "scopes_supported": ["google_ads"],
