@@ -303,14 +303,20 @@ async def oauth_authorize(
 @app.get("/oauth/callback")
 async def oauth_callback(code: str, state: str):
     """Google OAuth callback. Supports both legacy and brokered connector flow."""
+    import logging
+    logger = logging.getLogger(__name__)
     try:
+        logger.info(f"OAuth callback received: state_len={len(state)}, code_len={len(code)}")
+        
         # Try database lookup first
         auth_req = db.get_auth_request_by_google_state(state)
+        logger.info(f"DB lookup result: {auth_req is not None}")
 
         # Legacy direct flow: state is session_id
         if not auth_req:
             # Try to decode signed state token (stateless fallback)
             state_payload = auth._verify_state(state)
+            logger.info(f"Stateless verification result: {state_payload is not None}")
             
             if state_payload:
                 # Stateless connector flow: decode state from token
@@ -410,7 +416,10 @@ async def oauth_callback(code: str, state: str):
         return RedirectResponse(url=redirect_target)
 
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
         msg = str(e)
+        logger.error(f"OAuth callback error: {msg}")
         # Self-heal stale sessions
         if "Missing code verifier" in msg or "invalid_grant" in msg.lower():
             return RedirectResponse(url=f"{BASE_URL}/oauth/start")
