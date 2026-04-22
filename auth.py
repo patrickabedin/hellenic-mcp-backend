@@ -45,7 +45,11 @@ def _verify_state(state: str) -> Optional[dict]:
         ).decode().rstrip("=")
         if not hmac.compare_digest(sig, expected_sig):
             return None
-        payload = json.loads(base64.urlsafe_b64decode(data + "==").decode())
+        # Fix base64 padding dynamically
+        padding = 4 - (len(data) % 4)
+        if padding != 4:
+            data += "=" * padding
+        payload = json.loads(base64.urlsafe_b64decode(data).decode())
         if payload.get("exp") and payload["exp"] < datetime.utcnow().timestamp():
             return None
         return payload
@@ -74,7 +78,11 @@ def verify_auth_code(code: str) -> Optional[dict]:
         ).decode().rstrip("=")
         if not hmac.compare_digest(sig, expected_sig):
             return None
-        payload = json.loads(base64.urlsafe_b64decode(data + "==").decode())
+        # Fix base64 padding dynamically
+        padding = 4 - (len(data) % 4)
+        if padding != 4:
+            data += "=" * padding
+        payload = json.loads(base64.urlsafe_b64decode(data).decode())
         if payload.get("exp") and payload["exp"] < datetime.utcnow().timestamp():
             return None
         return payload
