@@ -20,8 +20,14 @@ import db
 # OAuth2 scopes for Google Ads
 SCOPES = ["https://www.googleapis.com/auth/adwords"]
 
-# Secret for signing state tokens (stateless OAuth for ephemeral environments)
-STATE_SECRET = os.getenv("STATE_SECRET", os.getenv("GOOGLE_ADS_CLIENT_SECRET", secrets.token_urlsafe(32)))
+# Secret for signing state tokens (stateless OAuth for ephemeral environments).
+# Use GOOGLE_ADS_CLIENT_SECRET as stable fallback so signatures survive restarts.
+_state_secret_env = os.getenv("STATE_SECRET") or os.getenv("GOOGLE_ADS_CLIENT_SECRET")
+if not _state_secret_env:
+    raise RuntimeError(
+        "STATE_SECRET or GOOGLE_ADS_CLIENT_SECRET must be set in the environment."
+    )
+STATE_SECRET = _state_secret_env
 
 
 def _sign_state(payload: dict) -> str:
