@@ -319,8 +319,11 @@ async def oauth_callback(code: str, state: str):
                 connector_state = state_payload.get("state")
                 code_challenge = state_payload.get("code_challenge", "")
                 
+                # Extract code_verifier from stateless token for Google PKCE exchange
+                code_verifier = state_payload.get("code_verifier")
+                
                 # Exchange Google code
-                auth.exchange_code(code, session_id)
+                auth.exchange_code(code, session_id, code_verifier)
                 
                 # Issue signed auth code (stateless — survives DB wipes)
                 code_payload = {

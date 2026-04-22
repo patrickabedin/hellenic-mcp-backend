@@ -121,7 +121,6 @@ def get_oauth_flow() -> Flow:
         scopes=SCOPES,
         redirect_uri=os.getenv("GOOGLE_ADS_REDIRECT_URI"),
     )
-    flow.code_verifier = None
     return flow
 
 
@@ -175,16 +174,22 @@ def get_auth_url_for_connector(signed_state: str, code_verifier: str) -> str:
     return f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
 
 
-def exchange_code(code: str, session_id: str) -> dict:
-    """Exchange authorization code for Google tokens and store by session_id."""
+def exchange_code(code: str, session_id: str, code_verifier: str = None) -> dict:
+    """Exchange authorization code for Google tokens and store by session_id.
+    
+    Supports both legacy DB-stored verifiers and stateless flow verifiers
+    passed directly from the signed state token.
+    """
     flow = get_oauth_flow()
 
-    code_verifier = db.get_google_pkce_state(session_id)
     if not code_verifier:
-        raise RuntimeError("(invalid_grant) Missing code verifier for Google leg. Start a fresh OAuth flow.")
+        # Legacy flow: verifier stored in DB
+        code_verifier = db.get_google_pkce_state(session_id)
+        if not code_verifier:
+            raise RuntimeError("(invalid_grant) Missing code verifier for Google leg. Start a fresh OAuth flow.")
+        db.delete_google_pkce_state(session_id)
 
     flow.fetch_token(code=code, code_verifier=code_verifier)
-    db.delete_google_pkce_state(session_id)
 
     credentials = flow.credentials
 
