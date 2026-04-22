@@ -181,7 +181,7 @@ def get_auth_url_for_connector(signed_state: str, code_verifier: str) -> str:
 
 
 def exchange_code(code: str, session_id: str, code_verifier: str = None) -> dict:
-    """Exchange authorization code for Google tokens and store by session_id.
+    """Exchange authorization code for Google tokens and return them.
     
     Supports both legacy DB-stored verifiers and stateless flow verifiers
     passed directly from the signed state token.
@@ -201,22 +201,62 @@ def exchange_code(code: str, session_id: str, code_verifier: str = None) -> dict
 
     credentials = flow.credentials
 
-    db.store_tokens(
-        session_id=session_id,
-        access_token=credentials.token,
-        refresh_token=credentials.refresh_token,
-        expiry=credentials.expiry.isoformat(),
-    )
+    # Store in DB (best effort for legacy compatibility)
+    try:
+        db.store_tokens(
+            session_id=session_id,
+            access_token=credentials.token,
+            refresh_token=credentials.refresh_token,
+            expiry=credentials.expiry.isoformat(),
+        )
+    except Exception:
+        pass
 
     return {
         "session_id": session_id,
         "access_token": credentials.token,
+        "refresh_token": credentials.refresh_token,
         "expiry": credentials.expiry.isoformat(),
     }
 
 
+# Thread-local storage for stateless token payloads (avoids DB dependency)
+import threading
+_token_context = threading.local()
+
+def set_token_context(payload: dict):
+    """Store the decoded bearer token payload for the current request."""
+    _token_context.payload = payload
+
+def get_token_context() -> Optional[dict]:
+    """Retrieve the decoded bearer token payload for the current request."""
+    return getattr(_token_context, 'payload', None)
+
+def clear_token_context():
+    """Clear the token context after request processing."""
+    _token_context.payload = None
+
 def get_credentials(session_id: str) -> Optional[Credentials]:
-    """Retrieve stored credentials for a session."""
+    """Retrieve stored credentials for a session.
+    
+    First checks the stateless token context (no DB needed), then falls back to DB.
+    """
+    # Try stateless token context first (embedded Google tokens)
+    ctx = get_token_context()
+    if ctx and ctx.get("session_id") == session_id and ctx.get("google_access_token"):
+        credentials = Credentials(
+            token=ctx["google_access_token"],
+            refresh_token=ctx.get("google_refresh_token"),
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=os.getenv("GOOGLE_ADS_CLIENT_ID"),
+            client_secret=os.getenv("GOOGLE_ADS_CLIENT_SECRET"),
+            scopes=SCOPES,
+        )
+        if ctx.get("google_expiry"):
+            credentials.expiry = datetime.fromisoformat(ctx["google_expiry"])
+        return credentials
+    
+    # Fallback: DB lookup for legacy tokens
     tokens = db.get_tokens(session_id)
     if not tokens:
         return None
@@ -247,11 +287,22 @@ def refresh_token_if_needed(session_id: str) -> bool:
     ):
         credentials.refresh(Request())
 
-        db.update_tokens(
-            session_id=session_id,
-            access_token=credentials.token,
-            expiry=credentials.expiry.isoformat(),
-        )
+        # Update DB (best effort)
+        try:
+            db.update_tokens(
+                session_id=session_id,
+                access_token=credentials.token,
+                expiry=credentials.expiry.isoformat(),
+            )
+        except Exception:
+            pass
+
+        # Update token context for stateless operation
+        ctx = get_token_context()
+        if ctx and ctx.get("session_id") == session_id:
+            ctx["google_access_token"] = credentials.token
+            ctx["google_expiry"] = credentials.expiry.isoformat()
+            set_token_context(ctx)
 
         return True
 

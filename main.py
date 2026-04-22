@@ -329,14 +329,17 @@ async def oauth_callback(code: str, state: str):
                 code_verifier = state_payload.get("code_verifier")
                 
                 # Exchange Google code
-                auth.exchange_code(code, session_id, code_verifier)
+                google_tokens = auth.exchange_code(code, session_id, code_verifier)
                 
-                # Issue signed auth code (stateless — survives DB wipes)
+                # Issue signed auth code with embedded Google tokens (stateless — survives DB wipes)
                 code_payload = {
                     "session_id": session_id,
                     "client_id": state_payload.get("client_id"),
                     "redirect_uri": redirect_uri,
                     "code_challenge": code_challenge,
+                    "google_access_token": google_tokens["access_token"],
+                    "google_refresh_token": google_tokens["refresh_token"],
+                    "google_expiry": google_tokens["expiry"],
                     "exp": int((datetime.utcnow() + timedelta(minutes=10)).timestamp()),
                 }
                 local_code = auth.sign_auth_code(code_payload)
@@ -469,6 +472,13 @@ async def oauth_token(request: Request):
             "client_id": code_payload.get("client_id"),
             "exp": int((datetime.utcnow() + timedelta(days=30)).timestamp()),
         }
+        
+        # Embed Google tokens in bearer token for fully stateless operation
+        if code_payload.get("google_access_token"):
+            token_payload["google_access_token"] = code_payload["google_access_token"]
+            token_payload["google_refresh_token"] = code_payload["google_refresh_token"]
+            token_payload["google_expiry"] = code_payload["google_expiry"]
+        
         access_token = auth.sign_auth_code(token_payload)
         
         return {
@@ -540,6 +550,8 @@ def _validate_bearer(request: Request) -> Optional[str]:
     if token_payload:
         if token_payload.get("exp") and token_payload["exp"] < datetime.utcnow().timestamp():
             return None
+        # Store payload in thread-local for tools to access Google tokens without DB
+        auth.set_token_context(token_payload)
         return token_payload.get("session_id")
     
     # Fallback: DB lookup for legacy tokens
@@ -675,6 +687,7 @@ async def mcp_http(request: Request):
     if token_payload:
         if token_payload.get("exp") and token_payload["exp"] < datetime.utcnow().timestamp():
             return _unauthorized("Expired bearer token")
+        auth.set_token_context(token_payload)
         session_from_bearer = token_payload.get("session_id")
     else:
         # Fallback: DB lookup for legacy tokens
