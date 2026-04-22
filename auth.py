@@ -189,7 +189,9 @@ def exchange_code(code: str, session_id: str, code_verifier: str = None) -> dict
             raise RuntimeError("(invalid_grant) Missing code verifier for Google leg. Start a fresh OAuth flow.")
         db.delete_google_pkce_state(session_id)
 
-    flow.fetch_token(code=code, code_verifier=code_verifier)
+    # Explicitly set the PKCE verifier on the flow before exchanging
+    flow.code_verifier = code_verifier
+    flow.fetch_token(code=code)
 
     credentials = flow.credentials
 
