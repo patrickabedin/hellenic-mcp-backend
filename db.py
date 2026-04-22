@@ -1,4 +1,8 @@
-"""Database module for session token storage and OAuth broker state."""
+"""Database module for session token storage and OAuth broker state.
+
+Supports PostgreSQL (production) and SQLite (local dev) via DATABASE_URL env var.
+"""
+import os
 import sqlite3
 import json
 import secrets
@@ -6,7 +10,17 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from contextlib import contextmanager
 
-DB_PATH = "sessions.db"
+# Database configuration
+DATABASE_URL = os.getenv("DATABASE_URL")
+DB_PATH = os.getenv("DB_PATH", "sessions.db")
+
+# PostgreSQL support
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    HAS_POSTGRES = True
+except ImportError:
+    HAS_POSTGRES = False
 
 
 def _utcnow_iso() -> str:
@@ -17,9 +31,47 @@ def _iso_after(minutes: int = 0, days: int = 0) -> str:
     return (datetime.utcnow() + timedelta(minutes=minutes, days=days)).isoformat()
 
 
+@contextmanager
+def get_db():
+    """Context manager for database connections."""
+    if DATABASE_URL and HAS_POSTGRES:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        conn.cursor_factory = RealDictCursor
+        try:
+            yield conn
+        finally:
+            conn.close()
+    else:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+        finally:
+            conn.close()
+
+
+def _execute_sql(conn, sql: str, params=()):
+    """Execute SQL with dialect adaptation for SQLite vs PostgreSQL."""
+    # Adapt SQL dialect differences
+    adapted = sql
+    if DATABASE_URL and HAS_POSTGRES:
+        # PostgreSQL uses TEXT PRIMARY KEY, INTEGER for booleans
+        pass
+    else:
+        # SQLite specific adaptations
+        adapted = adapted.replace("%s", "?")
+    
+    cur = conn.cursor()
+    cur.execute(adapted, params)
+    return cur
+
+
 def init_db():
     """Initialize the database schema."""
     with get_db() as conn:
+        is_pg = DATABASE_URL and HAS_POSTGRES
+        
+        # Sessions table
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS sessions (
@@ -110,17 +162,6 @@ def init_db():
         conn.commit()
 
 
-@contextmanager
-def get_db():
-    """Context manager for database connections."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-
 def store_tokens(
     session_id: str,
     access_token: str,
@@ -135,6 +176,16 @@ def store_tokens(
             INSERT OR REPLACE INTO sessions
             (session_id, access_token, refresh_token, expiry, customer_ids, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
+            """ if not (DATABASE_URL and HAS_POSTGRES) else """
+            INSERT INTO sessions
+            (session_id, access_token, refresh_token, expiry, customer_ids, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (session_id) DO UPDATE SET
+            access_token = EXCLUDED.access_token,
+            refresh_token = EXCLUDED.refresh_token,
+            expiry = EXCLUDED.expiry,
+            customer_ids = EXCLUDED.customer_ids,
+            created_at = EXCLUDED.created_at
             """,
             (
                 session_id,
@@ -152,7 +203,8 @@ def get_tokens(session_id: str) -> Optional[Dict[str, Any]]:
     """Retrieve Google tokens for a session."""
     with get_db() as conn:
         row = conn.execute(
-            "SELECT * FROM sessions WHERE session_id = ?", (session_id,)
+            "SELECT * FROM sessions WHERE session_id = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM sessions WHERE session_id = ?",
+            (session_id,)
         ).fetchone()
 
         if not row:
@@ -172,7 +224,7 @@ def update_tokens(session_id: str, access_token: str, expiry: str):
     """Update access token after refresh."""
     with get_db() as conn:
         conn.execute(
-            "UPDATE sessions SET access_token = ?, expiry = ? WHERE session_id = ?",
+            "UPDATE sessions SET access_token = %s, expiry = %s WHERE session_id = %s" if (DATABASE_URL and HAS_POSTGRES) else "UPDATE sessions SET access_token = ?, expiry = ? WHERE session_id = ?",
             (access_token, expiry, session_id),
         )
         conn.commit()
@@ -181,7 +233,7 @@ def update_tokens(session_id: str, access_token: str, expiry: str):
 def delete_session(session_id: str):
     """Delete a session."""
     with get_db() as conn:
-        conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
+        conn.execute("DELETE FROM sessions WHERE session_id = %s" if (DATABASE_URL and HAS_POSTGRES) else "DELETE FROM sessions WHERE session_id = ?", (session_id,))
         conn.commit()
 
 
@@ -203,6 +255,10 @@ def create_auth_request(
             INSERT INTO oauth_auth_requests
             (request_id, client_id, redirect_uri, state, code_challenge, code_challenge_method, session_id, google_state, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """ if not (DATABASE_URL and HAS_POSTGRES) else """
+            INSERT INTO oauth_auth_requests
+            (request_id, client_id, redirect_uri, state, code_challenge, code_challenge_method, session_id, google_state, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 request_id,
@@ -228,7 +284,8 @@ def create_auth_request(
 def get_auth_request_by_google_state(google_state: str) -> Optional[Dict[str, Any]]:
     with get_db() as conn:
         row = conn.execute(
-            "SELECT * FROM oauth_auth_requests WHERE google_state = ?", (google_state,)
+            "SELECT * FROM oauth_auth_requests WHERE google_state = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM oauth_auth_requests WHERE google_state = ?",
+            (google_state,)
         ).fetchone()
         return dict(row) if row else None
 
@@ -236,7 +293,7 @@ def get_auth_request_by_google_state(google_state: str) -> Optional[Dict[str, An
 def mark_auth_request_completed(request_id: str):
     with get_db() as conn:
         conn.execute(
-            "UPDATE oauth_auth_requests SET completed_at = ? WHERE request_id = ?",
+            "UPDATE oauth_auth_requests SET completed_at = %s WHERE request_id = %s" if (DATABASE_URL and HAS_POSTGRES) else "UPDATE oauth_auth_requests SET completed_at = ? WHERE request_id = ?",
             (_utcnow_iso(), request_id),
         )
         conn.commit()
@@ -256,6 +313,10 @@ def issue_oauth_code(
             INSERT INTO oauth_codes
             (code, request_id, session_id, client_id, redirect_uri, created_at, expires_at, used)
             VALUES (?, ?, ?, ?, ?, ?, ?, 0)
+            """ if not (DATABASE_URL and HAS_POSTGRES) else """
+            INSERT INTO oauth_codes
+            (code, request_id, session_id, client_id, redirect_uri, created_at, expires_at, used)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 0)
             """,
             (code, request_id, session_id, client_id, redirect_uri, _utcnow_iso(), _iso_after(minutes=ttl_minutes)),
         )
@@ -265,20 +326,21 @@ def issue_oauth_code(
 
 def get_oauth_code(code: str) -> Optional[Dict[str, Any]]:
     with get_db() as conn:
-        row = conn.execute("SELECT * FROM oauth_codes WHERE code = ?", (code,)).fetchone()
+        row = conn.execute("SELECT * FROM oauth_codes WHERE code = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM oauth_codes WHERE code = ?", (code,)).fetchone()
         return dict(row) if row else None
 
 
 def mark_oauth_code_used(code: str):
     with get_db() as conn:
-        conn.execute("UPDATE oauth_codes SET used = 1 WHERE code = ?", (code,))
+        conn.execute("UPDATE oauth_codes SET used = 1 WHERE code = %s" if (DATABASE_URL and HAS_POSTGRES) else "UPDATE oauth_codes SET used = 1 WHERE code = ?", (code,))
         conn.commit()
 
 
 def get_auth_request_by_id(request_id: str) -> Optional[Dict[str, Any]]:
     with get_db() as conn:
         row = conn.execute(
-            "SELECT * FROM oauth_auth_requests WHERE request_id = ?", (request_id,)
+            "SELECT * FROM oauth_auth_requests WHERE request_id = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM oauth_auth_requests WHERE request_id = ?",
+            (request_id,)
         ).fetchone()
         return dict(row) if row else None
 
@@ -298,6 +360,10 @@ def issue_connector_token(
             INSERT INTO connector_tokens
             (access_token, session_id, client_id, created_at, expires_at)
             VALUES (?, ?, ?, ?, ?)
+            """ if not (DATABASE_URL and HAS_POSTGRES) else """
+            INSERT INTO connector_tokens
+            (access_token, session_id, client_id, created_at, expires_at)
+            VALUES (%s, %s, %s, %s, %s)
             """,
             (access_token, session_id, client_id, created_at, expires_at),
         )
@@ -306,17 +372,52 @@ def issue_connector_token(
     return {
         "access_token": access_token,
         "token_type": "Bearer",
-        "expires_in": ttl_days * 24 * 3600,
-        "expires_at": expires_at,
+        "expires_in": ttl_days * 86400,
     }
 
 
 def get_connector_token(access_token: str) -> Optional[Dict[str, Any]]:
     with get_db() as conn:
         row = conn.execute(
-            "SELECT * FROM connector_tokens WHERE access_token = ?", (access_token,)
+            "SELECT * FROM connector_tokens WHERE access_token = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM connector_tokens WHERE access_token = ?",
+            (access_token,)
         ).fetchone()
         return dict(row) if row else None
+
+
+def store_google_pkce_state(state: str, code_verifier: str):
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO google_pkce_states
+            (state, code_verifier, created_at)
+            VALUES (?, ?, ?)
+            """ if not (DATABASE_URL and HAS_POSTGRES) else """
+            INSERT INTO google_pkce_states
+            (state, code_verifier, created_at)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (state) DO UPDATE SET
+            code_verifier = EXCLUDED.code_verifier,
+            created_at = EXCLUDED.created_at
+            """,
+            (state, code_verifier, _utcnow_iso()),
+        )
+        conn.commit()
+
+
+def get_google_pkce_state(state: str) -> Optional[str]:
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT * FROM google_pkce_states WHERE state = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM google_pkce_states WHERE state = ?",
+            (state,)
+        ).fetchone()
+        return row["code_verifier"] if row else None
+
+
+def delete_google_pkce_state(state: str):
+    with get_db() as conn:
+        conn.execute("DELETE FROM google_pkce_states WHERE state = %s" if (DATABASE_URL and HAS_POSTGRES) else "DELETE FROM google_pkce_states WHERE state = ?", (state,))
+        conn.commit()
 
 
 def register_oauth_client(
@@ -336,6 +437,11 @@ def register_oauth_client(
             (client_id, client_name, redirect_uris, grant_types, response_types,
              token_endpoint_auth_method, scope, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """ if not (DATABASE_URL and HAS_POSTGRES) else """
+            INSERT INTO oauth_clients
+            (client_id, client_name, redirect_uris, grant_types, response_types,
+             token_endpoint_auth_method, scope, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 client_id,
@@ -364,7 +470,8 @@ def register_oauth_client(
 def get_oauth_client(client_id: str) -> Optional[Dict[str, Any]]:
     with get_db() as conn:
         row = conn.execute(
-            "SELECT * FROM oauth_clients WHERE client_id = ?", (client_id,)
+            "SELECT * FROM oauth_clients WHERE client_id = %s" if (DATABASE_URL and HAS_POSTGRES) else "SELECT * FROM oauth_clients WHERE client_id = ?",
+            (client_id,)
         ).fetchone()
         if not row:
             return None
@@ -373,29 +480,3 @@ def get_oauth_client(client_id: str) -> Optional[Dict[str, Any]]:
         d["grant_types"] = json.loads(d.get("grant_types") or "[]")
         d["response_types"] = json.loads(d.get("response_types") or "[]")
         return d
-
-
-def store_google_pkce_state(state: str, code_verifier: str):
-    with get_db() as conn:
-        conn.execute(
-            """
-            INSERT OR REPLACE INTO google_pkce_states (state, code_verifier, created_at)
-            VALUES (?, ?, ?)
-            """,
-            (state, code_verifier, _utcnow_iso()),
-        )
-        conn.commit()
-
-
-def get_google_pkce_state(state: str) -> Optional[str]:
-    with get_db() as conn:
-        row = conn.execute(
-            "SELECT code_verifier FROM google_pkce_states WHERE state = ?", (state,)
-        ).fetchone()
-        return row["code_verifier"] if row else None
-
-
-def delete_google_pkce_state(state: str):
-    with get_db() as conn:
-        conn.execute("DELETE FROM google_pkce_states WHERE state = ?", (state,))
-        conn.commit()
