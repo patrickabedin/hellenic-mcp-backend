@@ -24,12 +24,36 @@ def get_google_ads_client(session_id: str) -> GoogleAdsClient:
     
     return client
 
-async def connect_google_ads(session_id: str) -> Dict[str, str]:
-    """Generate OAuth URL for user to connect Google Ads account."""
-    auth_url = auth.get_auth_url(session_id)
+async def connect_google_ads(session_id: str = None) -> Dict[str, str]:
+    """Generate OAuth URL for user to connect Google Ads account.
+    
+    Uses stateless flow so credentials survive Render restarts.
+    """
+    import secrets
+    from datetime import datetime, timedelta
+    
+    if not session_id:
+        session_id = secrets.token_urlsafe(24)
+    
+    # Create stateless auth URL (survives DB wipes)
+    code_verifier = secrets.token_urlsafe(64)
+    code_challenge = auth._b64url_sha256(code_verifier)
+    
+    state_payload = {
+        "session_id": session_id,
+        "client_id": "manual_flow",
+        "redirect_uri": f"{os.getenv('PUBLIC_BASE_URL', 'https://api.google-ads-mcp.hellenicai.com')}/oauth/callback",
+        "code_challenge": code_challenge,
+        "code_verifier": code_verifier,
+        "exp": int((datetime.utcnow() + timedelta(minutes=10)).timestamp()),
+    }
+    signed_state = auth._sign_state(state_payload)
+    
+    auth_url = auth.get_auth_url_for_connector(signed_state, code_verifier)
+    
     return {
         "auth_url": auth_url,
-        "message": "Click the URL above to authorize access to your Google Ads account.",
+        "message": "Click the URL above to authorize access to your Google Ads account. After authorization, copy the session token from the success page and provide it here.",
         "session_id": session_id
     }
 

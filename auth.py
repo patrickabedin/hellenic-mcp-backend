@@ -239,9 +239,10 @@ def clear_token_context():
 def get_credentials(session_id: str) -> Optional[Credentials]:
     """Retrieve stored credentials for a session.
     
-    First checks the stateless token context (no DB needed), then falls back to DB.
+    First checks the stateless token context (no DB needed), then checks if
+    session_id itself is a stateless token, then falls back to DB.
     """
-    # Try stateless token context first (embedded Google tokens)
+    # Try stateless token context first (embedded Google tokens from HTTP header)
     ctx = get_token_context()
     if ctx and ctx.get("session_id") == session_id and ctx.get("google_access_token"):
         credentials = Credentials(
@@ -255,6 +256,25 @@ def get_credentials(session_id: str) -> Optional[Credentials]:
         if ctx.get("google_expiry"):
             credentials.expiry = datetime.fromisoformat(ctx["google_expiry"])
         return credentials
+    
+    # Check if session_id itself is a stateless token (manual flow)
+    if session_id and len(session_id) > 50 and "." in session_id:
+        try:
+            payload = verify_auth_code(session_id)
+            if payload and payload.get("google_access_token"):
+                credentials = Credentials(
+                    token=payload["google_access_token"],
+                    refresh_token=payload.get("google_refresh_token"),
+                    token_uri="https://oauth2.googleapis.com/token",
+                    client_id=os.getenv("GOOGLE_ADS_CLIENT_ID"),
+                    client_secret=os.getenv("GOOGLE_ADS_CLIENT_SECRET"),
+                    scopes=SCOPES,
+                )
+                if payload.get("google_expiry"):
+                    credentials.expiry = datetime.fromisoformat(payload["google_expiry"])
+                return credentials
+        except Exception:
+            pass
     
     # Fallback: DB lookup for legacy tokens
     tokens = db.get_tokens(session_id)

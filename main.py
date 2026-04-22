@@ -352,8 +352,21 @@ async def oauth_callback(code: str, state: str):
                 return RedirectResponse(url=redirect_target)
             
             # Pure legacy flow: state is just session_id
+            # Generate stateless token with embedded Google credentials
             result = auth.exchange_code(code, state)
-            html = """
+            
+            # Create stateless bearer token (survives DB wipes)
+            token_payload = {
+                "session_id": state,
+                "client_id": "manual_flow",
+                "google_access_token": result["access_token"],
+                "google_refresh_token": result["refresh_token"],
+                "google_expiry": result["expiry"],
+                "exp": int((datetime.utcnow() + timedelta(days=30)).timestamp()),
+            }
+            bearer_token = auth.sign_auth_code(token_payload)
+            
+            html = f"""
             <!DOCTYPE html>
             <html>
             <head>
@@ -361,8 +374,8 @@ async def oauth_callback(code: str, state: str):
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
-                    * { box-sizing: border-box; margin: 0; padding: 0; }
-                    body {
+                    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+                    body {{
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         min-height: 100vh;
@@ -370,17 +383,17 @@ async def oauth_callback(code: str, state: str):
                         align-items: center;
                         justify-content: center;
                         padding: 20px;
-                    }
-                    .card {
+                    }}
+                    .card {{
                         background: white;
                         border-radius: 16px;
                         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                        max-width: 500px;
+                        max-width: 600px;
                         width: 100%;
                         padding: 48px 40px;
                         text-align: center;
-                    }
-                    .icon {
+                    }}
+                    .icon {{
                         width: 80px;
                         height: 80px;
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -390,38 +403,82 @@ async def oauth_callback(code: str, state: str):
                         justify-content: center;
                         margin: 0 auto 24px;
                         font-size: 40px;
-                    }
-                    h1 {
+                    }}
+                    h1 {{
                         font-size: 28px;
                         color: #1a202c;
                         margin-bottom: 12px;
-                    }
-                    .subtitle {
+                    }}
+                    .subtitle {{
                         color: #718096;
                         font-size: 16px;
                         margin-bottom: 32px;
-                    }
-                    .steps {
+                    }}
+                    .token-box {{
+                        background: #f7fafc;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin: 24px 0;
+                        text-align: left;
+                    }}
+                    .token-label {{
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #4a5568;
+                        margin-bottom: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                    }}
+                    .token-value {{
+                        font-family: 'Courier New', monospace;
+                        font-size: 13px;
+                        color: #2d3748;
+                        word-break: break-all;
+                        background: white;
+                        padding: 12px;
+                        border-radius: 8px;
+                        border: 1px solid #e2e8f0;
+                    }}
+                    .copy-btn {{
+                        display: inline-block;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        font-weight: 600;
+                        font-size: 14px;
+                        border: none;
+                        cursor: pointer;
+                        margin-top: 12px;
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }}
+                    .copy-btn:hover {{
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    }}
+                    .steps {{
                         text-align: left;
                         background: #f7fafc;
                         border-radius: 12px;
                         padding: 24px;
                         margin-bottom: 24px;
-                    }
-                    .steps h3 {
+                    }}
+                    .steps h3 {{
                         font-size: 14px;
                         text-transform: uppercase;
                         letter-spacing: 0.05em;
                         color: #4a5568;
                         margin-bottom: 16px;
-                    }
-                    .step {
+                    }}
+                    .step {{
                         display: flex;
                         align-items: flex-start;
                         margin-bottom: 16px;
-                    }
-                    .step:last-child { margin-bottom: 0; }
-                    .step-number {
+                    }}
+                    .step:last-child {{ margin-bottom: 0; }}
+                    .step-number {{
                         width: 28px;
                         height: 28px;
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -434,52 +491,41 @@ async def oauth_callback(code: str, state: str):
                         font-weight: 600;
                         margin-right: 12px;
                         flex-shrink: 0;
-                    }
-                    .step-text {
+                    }}
+                    .step-text {{
                         color: #4a5568;
                         font-size: 15px;
                         line-height: 1.5;
                         padding-top: 2px;
-                    }
-                    .close-btn {
-                        display: inline-block;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        padding: 14px 32px;
-                        border-radius: 8px;
-                        text-decoration: none;
-                        font-weight: 600;
-                        font-size: 16px;
-                        border: none;
-                        cursor: pointer;
-                        transition: transform 0.2s, box-shadow 0.2s;
-                    }
-                    .close-btn:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-                    }
-                    .footer {
+                    }}
+                    .footer {{
                         margin-top: 24px;
                         color: #a0aec0;
                         font-size: 13px;
-                    }
+                    }}
                 </style>
             </head>
             <body>
                 <div class="card">
                     <div class="icon">✅</div>
                     <h1>Authorization Complete!</h1>
-                    <p class="subtitle">Your Google Ads account is now connected to Claude.</p>
+                    <p class="subtitle">Your Google Ads account is now connected.</p>
+                    
+                    <div class="token-box">
+                        <div class="token-label">Your Session Token (copy this)</div>
+                        <div class="token-value" id="token">{bearer_token}</div>
+                        <button class="copy-btn" onclick="copyToken()">Copy Token</button>
+                    </div>
                     
                     <div class="steps">
                         <h3>What to do next</h3>
                         <div class="step">
                             <div class="step-number">1</div>
-                            <div class="step-text">Close this browser window or tab.</div>
+                            <div class="step-text">Click "Copy Token" above to copy your session token.</div>
                         </div>
                         <div class="step">
                             <div class="step-number">2</div>
-                            <div class="step-text">Return to Claude — your session is now active.</div>
+                            <div class="step-text">Return to Claude and paste the token when asked for your session ID.</div>
                         </div>
                         <div class="step">
                             <div class="step-number">3</div>
@@ -487,17 +533,17 @@ async def oauth_callback(code: str, state: str):
                         </div>
                     </div>
                     
-                    <button class="close-btn" onclick="window.close()">Close Window</button>
-                    
                     <p class="footer">Hellenic Technologies Google Ads MCP Connector</p>
                 </div>
                 <script>
-                    // Auto-close after 10 seconds if window was opened by a script
-                    setTimeout(function() {
-                        if (window.opener) {
-                            window.close();
-                        }
-                    }, 10000);
+                    function copyToken() {{
+                        const token = document.getElementById('token').textContent;
+                        navigator.clipboard.writeText(token).then(() => {{
+                            const btn = document.querySelector('.copy-btn');
+                            btn.textContent = 'Copied!';
+                            setTimeout(() => btn.textContent = 'Copy Token', 2000);
+                        }});
+                    }}
                 </script>
             </body>
             </html>
