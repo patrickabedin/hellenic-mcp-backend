@@ -122,22 +122,19 @@ async def list_accounts(session_id: str) -> List[Dict[str, Any]]:
 async def list_mcc_child_accounts(session_id: str, manager_customer_id: str) -> List[Dict[str, Any]]:
     """List all child accounts under a Manager/MCC account.
     
-    This queries the Google Ads API using the MCC as login-customer-id
-    to discover all accessible child accounts in the hierarchy.
+    Uses the MCC as login-customer-id and queries customer_client to find
+    direct child accounts (level=1) in the MCC hierarchy.
     """
     try:
-        client = get_google_ads_client(session_id)
+        credentials = auth.get_credentials(session_id)
+        if not credentials:
+            return [{"error": "Not authenticated. Please connect your Google Ads account first."}]
         
-        # Use CustomerService with login-customer-id set to the MCC
-        # This allows querying child accounts under the manager
-        customer_service = client.get_service("CustomerService")
-        
-        # Set login-customer-id to the MCC for this request
-        # This is the key to accessing child accounts
-        from google.ads.googleads.client import GoogleAdsClient
+        # Refresh if needed
+        auth.refresh_token_if_needed(session_id)
         credentials = auth.get_credentials(session_id)
         
-        # Create client with login-customer-id set to MCC
+        # Create client with MCC as login-customer-id
         mcc_client = GoogleAdsClient(
             credentials=credentials,
             developer_token=os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN"),
@@ -145,48 +142,44 @@ async def list_mcc_child_accounts(session_id: str, manager_customer_id: str) -> 
             login_customer_id=manager_customer_id
         )
         
-        # List accessible customers under this MCC
-        mcc_customer_service = mcc_client.get_service("CustomerService")
-        accessible_customers = mcc_customer_service.list_accessible_customers()
+        # Query customer_client to find direct children under this MCC
+        ga_service = mcc_client.get_service("GoogleAdsService")
+        query = """
+            SELECT
+                customer_client.id,
+                customer_client.descriptive_name,
+                customer_client.currency_code,
+                customer_client.time_zone,
+                customer_client.status,
+                customer_client.manager,
+                customer_client.level
+            FROM customer_client
+            WHERE customer_client.level = 1
+        """
         
         child_accounts = []
-        for resource_name in accessible_customers.resource_names:
-            customer_id = resource_name.split('/')[-1]
-            # Skip the MCC itself
-            if customer_id == manager_customer_id:
-                continue
-                
-            try:
-                ga_service = mcc_client.get_service("GoogleAdsService")
-                query = """
-                    SELECT
-                        customer.id,
-                        customer.descriptive_name,
-                        customer.currency_code,
-                        customer.time_zone,
-                        customer.status,
-                        customer.manager
-                    FROM customer
-                    LIMIT 1
-                """
-                response = ga_service.search(customer_id=customer_id, query=query)
-                
-                for row in response:
-                    child_accounts.append({
-                        "customer_id": str(row.customer.id),
-                        "name": row.customer.descriptive_name,
-                        "currency": row.customer.currency_code,
-                        "timezone": row.customer.time_zone,
-                        "status": row.customer.status.name,
-                        "is_manager": row.customer.manager
-                    })
-            except GoogleAdsException:
-                # Skip accounts we can't access
-                continue
+        response = ga_service.search(customer_id=manager_customer_id, query=query)
+        
+        for row in response:
+            cc = row.customer_client
+            child_accounts.append({
+                "customer_id": str(cc.id),
+                "name": cc.descriptive_name,
+                "currency": cc.currency_code,
+                "timezone": cc.time_zone,
+                "status": str(cc.status).replace("CustomerStatus.", ""),
+                "is_manager": cc.manager,
+                "level": cc.level,
+            })
+        
+        if not child_accounts:
+            return [{"message": "No direct child accounts found under this MCC. The account may not be a manager account, or there are no linked child accounts."}]
         
         return child_accounts
+    except GoogleAdsException as ex:
+        return [{"error": f"Google Ads API error: {ex.error.code().name} - {ex.error.message}"}]
     except Exception as e:
-        return {"error": str(e)}
+        return [{"error": str(e)}]
 
 
 async def get_account_summary(
