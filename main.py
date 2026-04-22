@@ -422,15 +422,9 @@ async def oauth_token(request: Request):
 sse_transport = SseServerTransport("/messages")
 
 def _oauth_www_authenticate_header() -> Dict[str, str]:
-    # Use resource-specific metadata URI for maximum connector compatibility.
-    return {
-        "WWW-Authenticate": (
-            f'Bearer realm="{BASE_URL}/mcp", '
-            f'authorization_uri="{BASE_URL}/oauth/authorize", '
-            f'token_uri="{BASE_URL}/oauth/token", '
-            f'resource_metadata="{BASE_URL}/.well-known/oauth-protected-resource/mcp"'
-        )
-    }
+    # Per RFC 9728, keep WWW-Authenticate minimal. Clients discover endpoints via
+    # /.well-known/oauth-protected-resource, not by parsing this header.
+    return {"WWW-Authenticate": 'Bearer error="invalid_token"'}
 
 
 def _validate_bearer(request: Request) -> Optional[str]:
@@ -464,13 +458,7 @@ async def mcp_sse(request: Request):
     session_id = _validate_bearer(request)
     if not session_id:
         return JSONResponse(
-            {
-                "error": "unauthorized",
-                "name": "hellenic-google-ads-mcp",
-                "mcp": f"{BASE_URL}/mcp",
-                "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
-                "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
-            },
+            {"error": "invalid_token", "error_description": "Authentication required"},
             status_code=401,
             headers=_oauth_www_authenticate_header(),
         )
@@ -528,18 +516,10 @@ async def sse_alias(request: Request):
     session_id = _validate_bearer(request)
 
     if not session_id and "text/event-stream" not in accept:
-        headers = _oauth_www_authenticate_header()
-        headers["X-MCP-Auth-Required"] = "true"
         return JSONResponse(
-            {
-                "name": "hellenic-google-ads-mcp",
-                "mcp": f"{BASE_URL}/mcp",
-                "authentication": "required",
-                "oauth_authorization_server": f"{BASE_URL}/.well-known/oauth-authorization-server",
-                "oauth_protected_resource": f"{BASE_URL}/.well-known/oauth-protected-resource",
-            },
-            status_code=200,
-            headers=headers,
+            {"error": "invalid_token", "error_description": "Authentication required"},
+            status_code=401,
+            headers=_oauth_www_authenticate_header(),
         )
 
     return await mcp_sse(request)
